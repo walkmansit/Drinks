@@ -2,8 +2,6 @@ package com.office14.coffeedose.viewmodels
 
 import android.app.Application
 import androidx.lifecycle.*
-import com.office14.coffeedose.database.CoffeeDatabase
-import com.office14.coffeedose.domain.OrderDetail
 import com.office14.coffeedose.domain.OrderDetailFull
 import com.office14.coffeedose.extensions.mutableLiveData
 import com.office14.coffeedose.network.HttpExceptionEx
@@ -14,8 +12,10 @@ import com.office14.coffeedose.repository.PreferencesRepository.EMPTY_STRING
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
-class OrderDetailsViewModel @Inject constructor(application : Application, private val ordersRepository : OrdersRepository,
-                                                private var orderDetailsRepository:OrderDetailsRepository) : AndroidViewModel(application) {
+class OrderDetailsViewModel @Inject constructor(
+    application: Application, private val ordersRepository: OrdersRepository,
+    private var orderDetailsRepository: OrderDetailsRepository
+) : AndroidViewModel(application) {
 
     private val viewModelJob = Job()
     private val viewModelScope = CoroutineScope(viewModelJob + Dispatchers.Main)
@@ -23,30 +23,30 @@ class OrderDetailsViewModel @Inject constructor(application : Application, priva
     private val email = mutableLiveData(EMPTY_STRING)
 
     private val _navigateOrderAwaiting = MutableLiveData<Boolean>()
-    val navigateOrderAwaiting : LiveData<Boolean>
+    val navigateOrderAwaiting: LiveData<Boolean>
         get() = _navigateOrderAwaiting
 
     private val _forceLongPolling = MutableLiveData<Boolean>()
-    val forceLongPolling : LiveData<Boolean>
+    val forceLongPolling: LiveData<Boolean>
         get() = _forceLongPolling
 
     val unAttachedOrders = orderDetailsRepository.unAttachedOrderDetails(email)
 
-    var comment:String? = null
+    var comment: String? = null
 
     private val _errorMessage = MutableLiveData<String>()
-    val errorMessage : LiveData<String>
+    val errorMessage: LiveData<String>
         get() = _errorMessage
 
     private val _needLogin = MutableLiveData<Boolean>()
-    val needLogIn : LiveData<Boolean>
+    val needLogIn: LiveData<Boolean>
         get() = _needLogin
 
-    val isEmpty = Transformations.map(unAttachedOrders){
+    val isEmpty = Transformations.map(unAttachedOrders) {
         return@map it.isEmpty()
     }
 
-    val hasOrderInQueue = Transformations.map(ordersRepository.getCurrentQueueOrderByUser(email)){
+    val hasOrderInQueue = Transformations.map(ordersRepository.getCurrentQueueOrderByUser(email)) {
         return@map it != null
     }
 
@@ -54,40 +54,48 @@ class OrderDetailsViewModel @Inject constructor(application : Application, priva
         email.value = PreferencesRepository.getUserEmail()
     }
 
-    fun deleteOrderDetailsItem(item : OrderDetailFull){
+    fun deleteOrderDetailsItem(item: OrderDetailFull) {
         viewModelScope.launch {
             orderDetailsRepository.delete(item.orderDetailInner)
         }
     }
 
-    fun confirmOrder() : Boolean {
+    fun confirmOrder(): Boolean {
         email.value = PreferencesRepository.getUserEmail()
 
         viewModelScope.launch {
             try {
 
-                if (email.value != EMPTY_STRING){
+                if (email.value != EMPTY_STRING) {
                     val order = ordersRepository.getCurrentNotFinishedOrderByUser(email.value!!)
-                    if ( order != null) {
+                    if (order != null) {
                         _errorMessage.value = "Сначала закончите текущий заказ"
                         return@launch
                     }
                 }
 
-                val ordersForAdd = orderDetailsRepository.unAttachedOrderDetailsStraight(email.value!!)
+                val ordersForAdd =
+                    orderDetailsRepository.unAttachedOrderDetailsStraight(email.value!!)
 
-                val newOrderId = ordersRepository.createOrder(ordersForAdd,comment,PreferencesRepository.getIdToken(), email.value!!)
+                val newOrderId = ordersRepository.createOrder(
+                    ordersForAdd,
+                    comment,
+                    PreferencesRepository.getIdToken(),
+                    email.value!!
+                )
 
-                orderDetailsRepository.updateAttachedOrderDetailsWithOrderId(email.value!!,newOrderId)
+                orderDetailsRepository.updateAttachedOrderDetailsWithOrderId(
+                    email.value!!,
+                    newOrderId
+                )
 
                 _forceLongPolling.value = true
 
                 _navigateOrderAwaiting.value = true
-            }
-            catch (responseEx: HttpExceptionEx) {
+            } catch (responseEx: HttpExceptionEx) {
                 _errorMessage.value = responseEx.error.title
             } catch (ex: Exception) {
-                if (ex.message?.contains("401") == true){
+                if (ex.message?.contains("401") == true) {
                     _needLogin.value = true
                     _errorMessage.value = "Необходима авторизация"
                 }
@@ -98,11 +106,11 @@ class OrderDetailsViewModel @Inject constructor(application : Application, priva
         return true
     }
 
-    fun doneLogin(){
+    fun doneLogin() {
         _needLogin.value = false
     }
 
-    fun hideErrorMessage(){
+    fun hideErrorMessage() {
         _errorMessage.value = null
     }
 
@@ -111,7 +119,7 @@ class OrderDetailsViewModel @Inject constructor(application : Application, priva
         viewModelJob.cancel()
     }
 
-    fun clearOrderDetails(){
+    fun clearOrderDetails() {
         viewModelScope.launch {
             if (email.value == EMPTY_STRING)
                 orderDetailsRepository.deleteUnAttached()
@@ -120,11 +128,11 @@ class OrderDetailsViewModel @Inject constructor(application : Application, priva
         }
     }
 
-    fun doneNavigating(){
+    fun doneNavigating() {
         _navigateOrderAwaiting.value = false
     }
 
-    fun doneForceLongPolling(){
+    fun doneForceLongPolling() {
         _forceLongPolling.value = false
     }
 }

@@ -10,13 +10,13 @@ import com.coffeedose.R
 import com.office14.coffeedose.domain.Coffee
 
 
-class CoffeeSpinnerAdapter(private val context : Context) : BaseAdapter() {
+class CoffeeSpinnerAdapter(private val context: Context) : BaseAdapter() {
 
     private val _inflater: LayoutInflater = LayoutInflater.from(context)
 
     private var items: List<Coffee> = listOf()
 
-    fun setItems(source: List<Coffee> ){
+    fun setItems(source: List<Coffee>) {
         items = source
         notifyDataSetChanged()
     }
@@ -49,9 +49,9 @@ class CoffeeSpinnerAdapter(private val context : Context) : BaseAdapter() {
         private val price: TextView = row.findViewById<TextView>(R.id.tv_coffee_smallest_price)
 
 
-        fun rebindViewHolder(item: Coffee){
+        fun rebindViewHolder(item: Coffee) {
             name.text = item.name
-            price.text="${item.smallestSizePrice}+"
+            price.text = "${item.smallestSizePrice}+"
         }
     }
 }

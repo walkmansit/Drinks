@@ -11,7 +11,7 @@ import dagger.multibindings.IntoMap
 
 
 @AssistedModule
-@Module(includes=[AssistedInject_SelectDoseVMModule::class])
+@Module(includes = [AssistedInject_SelectDoseVMModule::class])
 abstract class SelectDoseVMModule {
     @Binds
     @IntoMap

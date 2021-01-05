@@ -12,13 +12,13 @@ import com.bumptech.glide.Glide
 import com.coffeedose.R
 import com.office14.coffeedose.domain.Addin
 
-class AddinsListAdapter(context : Context,val listener : AddinCheckListener) : BaseAdapter() {
+class AddinsListAdapter(context: Context, val listener: AddinCheckListener) : BaseAdapter() {
 
     private val _inflater: LayoutInflater = LayoutInflater.from(context)
 
-    private var items : List<Addin> = listOf()
+    private var items: List<Addin> = listOf()
 
-    fun setItems(source: List<Addin>){
+    fun setItems(source: List<Addin>) {
         items = source
         notifyDataSetChanged()
     }
@@ -28,7 +28,7 @@ class AddinsListAdapter(context : Context,val listener : AddinCheckListener) : B
         val vh: AddinViewHolder
         if (convertView == null) {
             view = _inflater.inflate(R.layout.view_addin_list_item, parent, false)
-            vh = AddinViewHolder(view,listener)
+            vh = AddinViewHolder(view, listener)
             view?.tag = vh
         } else {
             view = convertView
@@ -46,14 +46,14 @@ class AddinsListAdapter(context : Context,val listener : AddinCheckListener) : B
 
     override fun getCount() = items.size
 
-    private class AddinViewHolder(view: View,val listener : AddinCheckListener){
+    private class AddinViewHolder(view: View, val listener: AddinCheckListener) {
         private val icon = view.findViewById<ImageView>(R.id.iv_addin_icon)
         private val name = view.findViewById<TextView>(R.id.tv_addin_name)
         private val description = view.findViewById<TextView>(R.id.tv_addin_desc)
         private val price = view.findViewById<TextView>(R.id.tv_addin_price)
         private val checkBox = view.findViewById<CheckBox>(R.id.cb_addin_select)
 
-        fun rebindViewHolder(item : Addin){
+        fun rebindViewHolder(item: Addin) {
 
             Glide.with(icon.context)
                 .load(item.photoUrl)
@@ -65,14 +65,14 @@ class AddinsListAdapter(context : Context,val listener : AddinCheckListener) : B
             description.text = item.description
             price.text = "${item.price} Р."
 
-            checkBox.setOnCheckedChangeListener {
-                    buttonView, isChecked -> listener.onClick(item,isChecked)
+            checkBox.setOnCheckedChangeListener { buttonView, isChecked ->
+                listener.onClick(item, isChecked)
             }
 
         }
     }
 }
 
-class AddinCheckListener(val clickListener: (addin : Addin, isChecked: Boolean) -> Unit) {
-    fun onClick(addin : Addin, isChecked: Boolean) = clickListener(addin,isChecked)
+class AddinCheckListener(val clickListener: (addin: Addin, isChecked: Boolean) -> Unit) {
+    fun onClick(addin: Addin, isChecked: Boolean) = clickListener(addin, isChecked)
 }

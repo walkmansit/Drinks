@@ -3,8 +3,10 @@ package com.office14.coffeedose.database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
-@Database(entities = [CoffeeDbo::class,SizeDbo::class,AddinDbo::class,OrderDetailDbo::class,OrderDbo::class,OrderDetailsAndAddinsCrossRef::class,UserDbo::class],
-    version = 8, exportSchema = false)
+@Database(
+    entities = [CoffeeDbo::class, SizeDbo::class, AddinDbo::class, OrderDetailDbo::class, OrderDbo::class, OrderDetailsAndAddinsCrossRef::class, UserDbo::class],
+    version = 8, exportSchema = false
+)
 abstract class CoffeeDatabase : RoomDatabase() {
 
     abstract val drinksDatabaseDao: CoffeeDao
@@ -17,7 +19,7 @@ abstract class CoffeeDatabase : RoomDatabase() {
 
     abstract val ordersDatabaseDao: OrderDao
 
-    abstract val usersDatabaseDao : UserDao
+    abstract val usersDatabaseDao: UserDao
 
     /*companion object {
 

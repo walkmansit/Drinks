@@ -1,8 +1,6 @@
 package com.office14.coffeedose.di
 
 import android.app.Application
-import android.content.Context
-import com.google.android.datatransport.cct.CCTDestination
 import com.office14.coffeedose.CoffeeDoseApplication
 import dagger.BindsInstance
 import dagger.Component

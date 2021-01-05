@@ -6,9 +6,9 @@
         android:title="@string/BaseURL" />
     <item
         android:id="@+id/userInfo"
-        android:title="@string/Unauthrorized"
+        android:checkable="false"
         android:enabled="false"
-        android:checkable="false"/>
+        android:title="@string/Unauthrorized" />
     <item
         android:id="@+id/login"
         android:title="@string/Login" />

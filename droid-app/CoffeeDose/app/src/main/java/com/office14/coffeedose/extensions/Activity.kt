@@ -13,7 +13,7 @@ fun Activity.hideKeyboard() {
     imm.hideSoftInputFromWindow(view.windowToken, 0)
 }
 
-fun Activity.isKeyboardOpen() : Boolean {
+fun Activity.isKeyboardOpen(): Boolean {
     val display = windowManager.defaultDisplay
     val point = Point()
     display.getSize(point) // point.x - full height
@@ -25,6 +25,7 @@ fun Activity.isKeyboardOpen() : Boolean {
 
     return rect.height() < point.y
 }
-fun Activity.isKeyboardClosed() : Boolean {
+
+fun Activity.isKeyboardClosed(): Boolean {
     return !isKeyboardOpen()
 }

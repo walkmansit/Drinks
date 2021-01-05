@@ -4,11 +4,12 @@ import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
-import com.office14.coffeedose.CoffeeDoseApplication
 import com.office14.coffeedose.database.CoffeeDatabase
-import com.office14.coffeedose.domain.User
 import com.office14.coffeedose.network.CoffeeApiService
-import com.office14.coffeedose.repository.*
+import com.office14.coffeedose.repository.OrderDetailsRepository
+import com.office14.coffeedose.repository.OrdersRepository
+import com.office14.coffeedose.repository.PreferencesRepository
+import com.office14.coffeedose.repository.UsersRepository
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
@@ -61,7 +62,7 @@ abstract class AppModule {
 
         @Singleton
         @Provides
-        fun provideDataBase(context: Context) : CoffeeDatabase {
+        fun provideDataBase(context: Context): CoffeeDatabase {
             return Room.databaseBuilder(
                 context,
                 CoffeeDatabase::class.java,

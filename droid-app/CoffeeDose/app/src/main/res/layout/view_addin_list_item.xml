@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:background="@color/color_primary"
-    android:paddingLeft="@dimen/spacing_small_8"
-    android:paddingRight="@dimen/spacing_small_8"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="@color/color_primary"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/spacing_small_8"
+    android:paddingRight="@dimen/spacing_small_8">
 
 
     <androidx.appcompat.widget.AppCompatImageView
@@ -40,8 +40,8 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/spacing_small_8"
         android:textSize="@dimen/font_small_12"
-        app:layout_constraintEnd_toEndOf="@+id/cb_addin_select"
         app:layout_constraintBottom_toTopOf="@+id/cb_addin_select"
+        app:layout_constraintEnd_toEndOf="@+id/cb_addin_select"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="10 P." />
 
@@ -50,15 +50,15 @@
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tv_addin_desc"
         style="@style/Base.TextView.Multiline"
-        android:textSize="@dimen/font_small_12"
-        android:fontFamily="sans-serif-thin"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/tv_addin_name"
         android:layout_margin="@dimen/spacing_small_8"
-        app:layout_constraintTop_toBottomOf="@+id/tv_addin_name"
-        app:layout_constraintStart_toEndOf="@+id/iv_addin_icon"
+        android:fontFamily="sans-serif-thin"
+        android:textSize="@dimen/font_small_12"
         app:layout_constraintEnd_toStartOf="@+id/cb_addin_select"
+        app:layout_constraintStart_toEndOf="@+id/iv_addin_icon"
+        app:layout_constraintTop_toBottomOf="@+id/tv_addin_name"
         tools:text="so good" />
 
     <com.google.android.material.checkbox.MaterialCheckBox

@@ -9,13 +9,13 @@ import android.widget.TextView
 import com.coffeedose.R
 import com.office14.coffeedose.domain.CoffeeSize
 
-class SizeSpinnerAdapter(private val context : Context) : BaseAdapter() {
+class SizeSpinnerAdapter(private val context: Context) : BaseAdapter() {
 
     private val _inflater: LayoutInflater = LayoutInflater.from(context)
 
     private var items: List<CoffeeSize> = listOf()
 
-    fun setItems(source: List<CoffeeSize> ){
+    fun setItems(source: List<CoffeeSize>) {
         items = source
         notifyDataSetChanged()
     }
@@ -53,7 +53,7 @@ class SizeSpinnerAdapter(private val context : Context) : BaseAdapter() {
             price = row.findViewById<TextView>(R.id.tv_size_price)
         }
 
-        fun rebindViewHolder(item:CoffeeSize){
+        fun rebindViewHolder(item: CoffeeSize) {
             name.text = "${item.name} ( ${item.volume} )"
             price.text = "${item.price} Р."
         }

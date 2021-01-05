@@ -6,33 +6,33 @@ import androidx.room.PrimaryKey
 import com.office14.coffeedose.domain.Order
 
 @Entity(tableName = "orders")
-data class OrderDbo (
+data class OrderDbo(
     @PrimaryKey
-    val id : Int,
+    val id: Int,
 
     @ColumnInfo(name = "status_code")
-    val statusCode : String,
+    val statusCode: String,
 
     @ColumnInfo(name = "status_name")
-    val statusName : String,
+    val statusName: String,
 
     @ColumnInfo(name = "order_number")
-    val orderNumber : String,
+    val orderNumber: String,
 
     @ColumnInfo(name = "total_price")
-    val totalPrice : Int,
+    val totalPrice: Int,
 
     @ColumnInfo(name = "owner")
-    val owner : String?,
+    val owner: String?,
 
     @ColumnInfo(name = "finished")
-    var isFinished : String,
+    var isFinished: String,
 
     @ColumnInfo(name = "comment")
-    var comment : String?
+    var comment: String?
 
-){
+) {
     fun toDomainModel() = Order(
-        id, statusCode,statusName,orderNumber,totalPrice,owner,isFinished
+        id, statusCode, statusName, orderNumber, totalPrice, owner, isFinished
     )
 }

@@ -10,10 +10,13 @@ import com.office14.coffeedose.repository.OrderDetailsRepository
 import com.office14.coffeedose.repository.OrdersRepository
 import com.office14.coffeedose.repository.PreferencesRepository
 import kotlinx.coroutines.*
-import java.lang.Exception
 import javax.inject.Inject
 
-class OrderAwaitingViewModel @Inject constructor(application : Application, private val ordersRepository : OrdersRepository, private val ordersDetailsRepository : OrderDetailsRepository) : AndroidViewModel(application) {
+class OrderAwaitingViewModel @Inject constructor(
+    application: Application,
+    private val ordersRepository: OrdersRepository,
+    private val ordersDetailsRepository: OrderDetailsRepository
+) : AndroidViewModel(application) {
 
 
     private var orderId = mutableLiveData(-1)
@@ -23,21 +26,22 @@ class OrderAwaitingViewModel @Inject constructor(application : Application, priv
 
     var orderInfo = mutableLiveData<OrderInfo>(null)
 
-    val order : LiveData<Order> = Transformations.map(ordersRepository.getCurrentQueueOrderByUser(email)) {
-        if (it != null) {
-            return@map it
-        }
-        return@map null
+    val order: LiveData<Order> =
+        Transformations.map(ordersRepository.getCurrentQueueOrderByUser(email)) {
+            if (it != null) {
+                return@map it
+            }
+            return@map null
 
-    }
+        }
 
 
     private val _isLoading = MutableLiveData<Boolean>(true)
-    val isLoading : LiveData<Boolean>
+    val isLoading: LiveData<Boolean>
         get() = _isLoading
 
     private val _navigateToCoffeeList = MutableLiveData<Boolean>()
-    val navigateToCoffeeList : LiveData<Boolean>
+    val navigateToCoffeeList: LiveData<Boolean>
         get() = _navigateToCoffeeList
 
 
@@ -50,20 +54,20 @@ class OrderAwaitingViewModel @Inject constructor(application : Application, priv
         getOrderInfo()
     }
 
-    private fun getOrderInfo(){
+    private fun getOrderInfo() {
         try {
             viewModelScope.launch {
-                orderInfo.value = ordersRepository.getLastOrderInfo(PreferencesRepository.getIdToken()!!)
+                orderInfo.value =
+                    ordersRepository.getLastOrderInfo(PreferencesRepository.getIdToken()!!)
                 _isLoading.value = false
             }
-        }
-        catch (ex:Exception){
-            Log.d("OrderAwaitingViewModel.getOrderInfo",ex.message)
+        } catch (ex: Exception) {
+            Log.d("OrderAwaitingViewModel.getOrderInfo", ex.message)
         }
     }
 
-    private suspend fun getOrderId() : Int{
-        var result = -1
+    private suspend fun getOrderId(): Int {
+        var result: Int
         withContext(Dispatchers.IO) {
             val order = ordersRepository.getCurrentQueueOrderNormal()
             result = order!!.id
@@ -71,14 +75,14 @@ class OrderAwaitingViewModel @Inject constructor(application : Application, priv
         return result
     }
 
-    private fun initOrderId(){
+    private fun initOrderId() {
         viewModelScope.launch {
             val order = ordersRepository.getCurrentQueueOrderNormal()
             order?.let { orderId.value = it.id }
         }
     }
 
-    fun approve(){
+    fun approve() {
         //PreferencesRepository.saveLastOrderId(-1)
         //PreferencesRepository.saveNavigateToOrderAwaitFrag(false)
         viewModelScope.launch {
@@ -92,7 +96,7 @@ class OrderAwaitingViewModel @Inject constructor(application : Application, priv
         viewModelJob.cancel()
     }
 
-    fun doneNavigation(){
+    fun doneNavigation() {
         _navigateToCoffeeList.value = false
     }
 

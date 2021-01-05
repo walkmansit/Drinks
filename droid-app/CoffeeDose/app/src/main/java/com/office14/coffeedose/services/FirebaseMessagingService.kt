@@ -12,14 +12,12 @@ import androidx.core.app.NotificationCompat
 import com.coffeedose.R
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import com.office14.coffeedose.network.CoffeeApiService
 import com.office14.coffeedose.network.PostFcmDeviceTokenBody
 import com.office14.coffeedose.repository.PreferencesRepository
 import com.office14.coffeedose.ui.CoffeeDoseActivity
 import kotlinx.coroutines.Dispatchers
-import javax.inject.Inject
 
-class FirebaseMessagingService: FirebaseMessagingService() {
+class FirebaseMessagingService : FirebaseMessagingService() {
 
     /**
      * Called when message is received.
@@ -111,8 +109,8 @@ class FirebaseMessagingService: FirebaseMessagingService() {
         // TODO: Implement this method to send token to your app server.
         token?.let {
             PreferencesRepository.saveFcmRegToken(it)
-            with(Dispatchers.IO){
-                val body = PostFcmDeviceTokenBody(PreferencesRepository.getDeviceID(),token)
+            with(Dispatchers.IO) {
+                val body = PostFcmDeviceTokenBody(PreferencesRepository.getDeviceID(), token)
                 //coffeeApi.updateFcmDeviceToken(body,PreferencesRepository.getIdToken()!!)
             }
         }
@@ -123,20 +121,25 @@ class FirebaseMessagingService: FirebaseMessagingService() {
      *
      * @param messageBody FCM message body received.
      */
-    private fun sendNotification(messageTitle: String? ,messageBody: String?) {
+    private fun sendNotification(messageTitle: String?, messageBody: String?) {
         //PreferencesRepository.saveNavigateToOrderAwaitFrag(true)
 
         val intent = Intent(this, CoffeeDoseActivity::class.java)
         intent.putExtra(CoffeeDoseActivity.FromNotificationKey, true)
-        intent.putExtra(CoffeeDoseActivity.DestinationFragmentIDKey,CoffeeDoseActivity.OrderAwatingFragmentID)
+        intent.putExtra(
+            CoffeeDoseActivity.DestinationFragmentIDKey,
+            CoffeeDoseActivity.OrderAwatingFragmentID
+        )
 
 
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         //intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        val pendingIntent = PendingIntent.getActivity(this, NOTIFICATION_ID, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT)
+        val pendingIntent = PendingIntent.getActivity(
+            this, NOTIFICATION_ID, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         val channelId = getString(R.string.default_notification_channel_id)
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
@@ -148,17 +151,23 @@ class FirebaseMessagingService: FirebaseMessagingService() {
             .setSound(defaultSoundUri)
             .setContentIntent(pendingIntent)
 
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         // Since android Oreo notification channel is needed.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId,
+            val channel = NotificationChannel(
+                channelId,
                 "Channel human readable title",
-                NotificationManager.IMPORTANCE_DEFAULT)
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
             notificationManager.createNotificationChannel(channel)
         }
 
-        notificationManager.notify(NOTIFICATION_ID /* ID of notification */, notificationBuilder.build())
+        notificationManager.notify(
+            NOTIFICATION_ID /* ID of notification */,
+            notificationBuilder.build()
+        )
     }
 
     companion object {

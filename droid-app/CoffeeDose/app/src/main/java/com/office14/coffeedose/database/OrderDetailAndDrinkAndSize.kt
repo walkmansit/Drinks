@@ -5,22 +5,22 @@ import androidx.room.Junction
 import androidx.room.Relation
 import com.office14.coffeedose.domain.OrderDetailFull
 
-class OrderDetailAndDrinkAndSize (
+class OrderDetailAndDrinkAndSize(
 
     @Embedded
-    val orderDetail : OrderDetailDbo,
+    val orderDetail: OrderDetailDbo,
 
     @Relation(
-        parentColumn= "drink_id",
+        parentColumn = "drink_id",
         entityColumn = "id"
     )
-    val drink : CoffeeDbo,
+    val drink: CoffeeDbo,
 
     @Relation(
         parentColumn = "size_id",
         entityColumn = "id"
     )
-    val size : SizeDbo,
+    val size: SizeDbo,
 
     @Relation(
         parentColumn = "id",
@@ -28,10 +28,11 @@ class OrderDetailAndDrinkAndSize (
         associateBy = Junction(
             parentColumn = "order_details_id",
             entityColumn = "addin_id",
-            value = OrderDetailsAndAddinsCrossRef::class)
+            value = OrderDetailsAndAddinsCrossRef::class
+        )
     )
     val addIns: List<AddinDbo>
-){
+) {
     fun toDomainModel() = OrderDetailFull(
         orderDetail.id,
         orderDetail.drinkId,

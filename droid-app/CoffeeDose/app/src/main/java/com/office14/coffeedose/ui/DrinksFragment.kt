@@ -1,12 +1,10 @@
 package com.office14.coffeedose.ui
 
-import android.content.Context
 import android.os.Bundle
 import android.view.*
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
@@ -23,7 +21,6 @@ import com.office14.coffeedose.extensions.setBooleanVisibility
 import com.office14.coffeedose.repository.PreferencesRepository
 import com.office14.coffeedose.ui.Adapters.DrinksListAdapter
 import com.office14.coffeedose.viewmodels.DrinksViewModel
-import dagger.android.support.AndroidSupportInjection
 import dagger.android.support.DaggerFragment
 import javax.inject.Inject
 
@@ -31,7 +28,8 @@ import javax.inject.Inject
 /**
 
  */
-class DrinksFragment : DaggerFragment(),HasDefaultViewModelProviderFactory, SelectDoseAndAddinsFragment.OnDrinkAddListener {
+class DrinksFragment : DaggerFragment(), HasDefaultViewModelProviderFactory,
+    SelectDoseAndAddinsFragment.OnDrinkAddListener {
 
     @Inject
     lateinit var defaultViewModelFactory: InjectingSavedStateViewModelFactory
@@ -43,16 +41,21 @@ class DrinksFragment : DaggerFragment(),HasDefaultViewModelProviderFactory, Sele
         ViewModelProvider(this,DrinksViewModel.Factory(requireNotNull(this.activity).application)).get(DrinksViewModel::class.java)
     }*/
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
 
-        val binding: FragmentDrinksBinding = DataBindingUtil.inflate(inflater,R.layout.fragment_drinks,container,false)
+        val binding: FragmentDrinksBinding =
+            DataBindingUtil.inflate(inflater, R.layout.fragment_drinks, container, false)
 
         setHasOptionsMenu(true)
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
-       // initProceedButton(binding.proceedButton)
+        // initProceedButton(binding.proceedButton)
 
         //initDrinksSpinner(binding.drinksSpinner)
 
@@ -79,7 +82,7 @@ class DrinksFragment : DaggerFragment(),HasDefaultViewModelProviderFactory, Sele
     private fun handleOrdersNavigation() {
         viewModel.navigatingOrders.observe(viewLifecycleOwner, Observer {
             it?.let {
-                if (it){
+                if (it) {
                     findNavController().navigate(DrinksFragmentDirections.actionDrinksFragmentToOrderFragment())
                     viewModel.doneNavigatingOrders()
                 }
@@ -90,13 +93,12 @@ class DrinksFragment : DaggerFragment(),HasDefaultViewModelProviderFactory, Sele
     private fun initErrorHandling(binding: FragmentDrinksBinding) {
         viewModel.errorMessage.observe(viewLifecycleOwner, Observer {
 
-            if (it != null){
+            if (it != null) {
                 binding.rootFl.setBooleanVisibility(false)
                 binding.viewErrorDrinks.setBooleanVisibility(true)
                 binding.tvErrorTextDrinks.text = it
                 //viewModel.errorMessage.value ?: "Ошибка получения данных"
-            }
-            else {
+            } else {
                 binding.rootFl.setBooleanVisibility(true)
                 binding.viewErrorDrinks.setBooleanVisibility(false)
             }
@@ -106,10 +108,10 @@ class DrinksFragment : DaggerFragment(),HasDefaultViewModelProviderFactory, Sele
     private fun initSwipeToRefresh(swipeRefresh: SwipeRefreshLayout) {
         swipeRefresh.setOnRefreshListener { viewModel.refreshData(true) }
         viewModel.isRefreshing.observe(viewLifecycleOwner, Observer {
-            if (it != null){
+            if (it != null) {
                 swipeRefresh.isRefreshing = it
             }
-        } )
+        })
     }
 
     /*private fun initDrinksSpinner(drinksSpinner: Spinner) {
@@ -150,7 +152,7 @@ class DrinksFragment : DaggerFragment(),HasDefaultViewModelProviderFactory, Sele
     }*/
 
 
-    private fun initToolbar(){
+    private fun initToolbar() {
         val toolbar = (activity as AppCompatActivity).supportActionBar
         toolbar?.let {
             it.setDisplayHomeAsUpEnabled(false)
@@ -160,21 +162,22 @@ class DrinksFragment : DaggerFragment(),HasDefaultViewModelProviderFactory, Sele
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.main_menu,menu)
+        inflater.inflate(R.menu.main_menu, menu)
     }
 
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
         val email = PreferencesRepository.getUserEmail()
-        menu.findItem(R.id.userInfo).title = if (email == PreferencesRepository.EMPTY_STRING) getString(R.string.Unauthrorized) else email
+        menu.findItem(R.id.userInfo).title =
+            if (email == PreferencesRepository.EMPTY_STRING) getString(R.string.Unauthrorized) else email
         menu.findItem(R.id.login).isVisible = email == PreferencesRepository.EMPTY_STRING
         menu.findItem(R.id.logout).isVisible = email != PreferencesRepository.EMPTY_STRING
         menu.findItem(R.id.changeUser).isVisible = email != PreferencesRepository.EMPTY_STRING
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId){
+        when (item.itemId) {
             R.id.showEnvDialog -> {
                 showEditBaseUrlDialog()
                 return true
@@ -195,11 +198,11 @@ class DrinksFragment : DaggerFragment(),HasDefaultViewModelProviderFactory, Sele
         }
     }
 
-    private fun prepareAuth(){
-        (activity as CoffeeDoseActivity).signIn {  }
+    private fun prepareAuth() {
+        (activity as CoffeeDoseActivity).signIn { }
     }
 
-    private fun logout(){
+    private fun logout() {
         (activity as CoffeeDoseActivity).logout()
     }
 
@@ -221,7 +224,7 @@ class DrinksFragment : DaggerFragment(),HasDefaultViewModelProviderFactory, Sele
         viewModel.drinks.observe(this, Observer { viewModel.onSelectedItemIndexChanged(0) }) // TODO drop and do well
     }*/
 
-    private fun initDrinksRecyclerView(recyclerView: RecyclerView){
+    private fun initDrinksRecyclerView(recyclerView: RecyclerView) {
 
         val drinksAdapter = DrinksListAdapter(CoffeeItemClickListener { viewModel.selectDrink(it) })
 
@@ -229,7 +232,7 @@ class DrinksFragment : DaggerFragment(),HasDefaultViewModelProviderFactory, Sele
         //divDecor.setDrawable(R.layout.)
         //divDecor.setDrawable(R.layout.view)
 
-        with(recyclerView){
+        with(recyclerView) {
             adapter = drinksAdapter
             layoutManager = LinearLayoutManager(this.context)
             //addItemDecoration(divDecor)
@@ -244,18 +247,21 @@ class DrinksFragment : DaggerFragment(),HasDefaultViewModelProviderFactory, Sele
 
     }
 
-    private fun handleSelectItem(){
+    private fun handleSelectItem() {
         viewModel.selectedId.observe(viewLifecycleOwner, Observer {
             it?.let {
-                if (it != -1){
-                    val selectDoseAndAddInsFragment = SelectDoseAndAddinsFragment(this,it,viewModel.getDrinkName())
-                    selectDoseAndAddInsFragment.show(childFragmentManager,SelectDoseAndAddinsFragment.TAG)
+                if (it != -1) {
+                    val selectDoseAndAddInsFragment =
+                        SelectDoseAndAddinsFragment(this, it, viewModel.getDrinkName())
+                    selectDoseAndAddInsFragment.show(
+                        childFragmentManager,
+                        SelectDoseAndAddinsFragment.TAG
+                    )
                     viewModel.doneNavigatingDose()
                 }
             }
         })
     }
-
 
 
     private fun showEditBaseUrlDialog() {
