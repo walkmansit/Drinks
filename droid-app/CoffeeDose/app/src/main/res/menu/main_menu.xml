@@ -18,7 +18,7 @@
     <item
         android:id="@+id/logout"
         android:title="@string/Logout" />
-    <!--<item
-        android:id="@+id/goToOrderDetails"
-        android:title="@string/OrderDetails" />-->
+    <item
+        android:id="@+id/switchTheme"
+        android:title="@string/SwitchTheme" />
 </menu>

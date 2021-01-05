@@ -71,6 +71,8 @@ class DrinksFragment : DaggerFragment(), HasDefaultViewModelProviderFactory,
 
         handleOrdersNavigation()
 
+        handleSwitchTheme()
+
         //initOrdersButtonVisibility(binding.ordersFab)
 
         //initObserveListeners()
@@ -112,6 +114,11 @@ class DrinksFragment : DaggerFragment(), HasDefaultViewModelProviderFactory,
                 swipeRefresh.isRefreshing = it
             }
         })
+    }
+
+
+    private fun handleSwitchTheme(){
+        viewModel.getTheme().observe(viewLifecycleOwner, Observer { updateTheme(it) })
     }
 
     /*private fun initDrinksSpinner(drinksSpinner: Spinner) {
@@ -192,6 +199,10 @@ class DrinksFragment : DaggerFragment(), HasDefaultViewModelProviderFactory,
             }
             R.id.logout -> {
                 logout()
+                return true
+            }
+            R.id.switchTheme -> {
+                viewModel.switchTheme()
                 return true
             }
             else -> return false
@@ -286,6 +297,10 @@ class DrinksFragment : DaggerFragment(), HasDefaultViewModelProviderFactory,
 
     override fun onDrinkAdd() {
         //TODO update button visibility
+    }
+
+    private fun updateTheme(theme: Int) {
+        (activity as? CoffeeDoseActivity)?.updateTheme(theme)
     }
 
     override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory =

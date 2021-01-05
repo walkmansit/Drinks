@@ -260,6 +260,10 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
 
     fun isStarted(): Boolean = lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
 
+    fun updateTheme(theme: Int) {
+        delegate.localNightMode = theme
+    }
+
     companion object {
         private const val RC_SIGN_IN = 9001
         private const val TAG = "CoffeeDoseActivity"

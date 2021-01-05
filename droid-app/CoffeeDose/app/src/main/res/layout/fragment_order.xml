@@ -55,8 +55,8 @@
                 android:layout_marginTop="@dimen/spacing_normal_16"
                 android:layout_marginBottom="@dimen/spacing_normal_16"
                 android:layout_toStartOf="@id/confirmButton"
-                android:textColorHint="@color/color_white"
-                app:hintTextColor="@color/color_white">
+                android:textColorHint="@color/color_regular_text"
+                app:hintTextColor="@color/color_regular_text">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/ed_comment"

@@ -1,12 +1,14 @@
 package com.office14.coffeedose.viewmodels
 
 import android.app.Application
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.office14.coffeedose.extensions.mutableLiveData
 import com.office14.coffeedose.network.HttpExceptionEx
 import com.office14.coffeedose.repository.CoffeeRepository
+import com.office14.coffeedose.repository.PreferencesRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -17,6 +19,10 @@ class DrinksViewModel @Inject constructor(
     application: Application,
     private val coffeeRepository: CoffeeRepository
 ) : AndroidViewModel(application) {
+
+    private val prefRepository = PreferencesRepository
+
+    private val appTheme = MutableLiveData<Int>()
 
     private val notDefinedId = -1
 
@@ -47,6 +53,7 @@ class DrinksViewModel @Inject constructor(
 
     init {
         refreshData()
+        appTheme.value = prefRepository.getAppTheme()
     }
 
     override fun onCleared() {
@@ -87,5 +94,16 @@ class DrinksViewModel @Inject constructor(
 
     fun navigateOrders() {
         _navigatingOrders.value = true
+    }
+
+    fun getTheme() : LiveData<Int> = appTheme
+
+    fun switchTheme() {
+        if (appTheme.value == AppCompatDelegate.MODE_NIGHT_YES)
+            appTheme.value = AppCompatDelegate.MODE_NIGHT_NO
+        else
+            appTheme.value = AppCompatDelegate.MODE_NIGHT_YES
+
+        prefRepository.saveAppTheme(appTheme.value!!)
     }
 }

@@ -29,4 +29,6 @@
     <string name="PriceFormat">%d ₽</string>
     <string name="DrinkSizeAndAmountFormat">%s, %s, %s шт.</string>
     <string name="OrderInfoOrderNumberFormat">Номер: %s</string>
+    <string name="SwitchTheme">Поменять тему</string>
+
 </resources>

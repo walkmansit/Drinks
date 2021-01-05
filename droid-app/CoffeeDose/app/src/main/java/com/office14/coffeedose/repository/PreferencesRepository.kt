@@ -73,6 +73,7 @@ object PreferencesRepository {
         return id!!
     }
 
+
     private fun putValue(pair: Pair<String, Any>) = with(prefs.edit()) {
         val key = pair.first
 
