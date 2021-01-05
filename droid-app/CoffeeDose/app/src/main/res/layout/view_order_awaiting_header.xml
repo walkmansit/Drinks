@@ -36,7 +36,7 @@
                 style="@style/Base.EditText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="4dp"
+                android:layout_marginStart="@dimen/spacing_tiny_4"
                 android:text="@{item.orderStatusHumanized}"
                 app:orderStatusTextColor="@{item.orderStatus}" />
 

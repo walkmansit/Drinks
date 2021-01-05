@@ -36,10 +36,10 @@
                         style="@style/Base.TextView.Single"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
                         android:layout_alignParentTop="true"
-                        android:layout_toLeftOf="@id/tv_summary"
-                        android:paddingLeft="12dp"
+                        android:layout_toStartOf="@id/tv_summary"
+                        android:paddingStart="@dimen/spacing_normal_12"
                         tools:text="Expresso" />
 
                     <com.google.android.material.textview.MaterialTextView
@@ -47,8 +47,8 @@
                         style="@style/Base.TextView.Single"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
-                        android:paddingRight="12dp"
+                        android:layout_alignParentEnd="true"
+                        android:paddingEnd="@dimen/spacing_normal_12"
                         android:text="@{viewModel.summary}" />
                 </RelativeLayout>
 
@@ -88,10 +88,10 @@
                     android:id="@+id/number_picker"
                     android:layout_width="wrap_content"
                     android:layout_height="@dimen/default_button_height"
-                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
                     android:layout_alignParentBottom="true"
                     android:layout_margin="@dimen/spacing_normal_16"
-                    android:layout_toLeftOf="@id/addButton"
+                    android:layout_toStartOf="@id/addButton"
                     app:np_dividerColor="@color/color_white"
                     app:np_height="44dp"
                     app:np_max="30"
@@ -107,9 +107,9 @@
                     android:id="@+id/addButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
                     android:layout_alignParentBottom="true"
-                    android:layout_gravity="right|bottom"
+                    android:layout_gravity="end|bottom"
                     android:layout_margin="@dimen/spacing_normal_16"
                     android:backgroundTint="@color/fab_background_color"
                     android:elevation="@dimen/spacing_tiny_4"
@@ -117,7 +117,8 @@
                     android:src="@drawable/ic_add"
                     app:borderWidth="0dp"
                     app:fabSize="normal"
-                    app:tint="@null" />
+                    app:tint="@null"
+                    android:contentDescription="@string/DoAdd" />
 
             </RelativeLayout>
 
