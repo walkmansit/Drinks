@@ -54,6 +54,19 @@ class OrderAwaitingViewModel @Inject constructor(
         getOrderInfo()
     }
 
+    fun isRootVisible() : LiveData<Boolean> {
+        val result = MediatorLiveData<Boolean>()
+
+        val update = {
+            result.value = _isLoading.value == false && orderInfo.value != null
+        }
+
+        result.addSource(isLoading){ update.invoke() }
+        result.addSource(orderInfo){ update.invoke() }
+
+        return result
+    }
+
     private fun getOrderInfo() {
         try {
             viewModelScope.launch {
