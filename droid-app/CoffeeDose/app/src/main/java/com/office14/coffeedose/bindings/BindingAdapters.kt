@@ -26,7 +26,7 @@ fun bindImage(imgView: ImageView, imgUrl: String?) {
 @BindingAdapter("orderStatusTextColor")
 fun orderStatusTextColor(view: TextView, status: OrderStatus) {
 
-    val color = when(status){
+    val color = when (status) {
         OrderStatus.READY -> ContextCompat.getColor(view.context, R.color.color_green)
         OrderStatus.COOKING -> ContextCompat.getColor(view.context, R.color.color_yellow)
         OrderStatus.FAILED -> ContextCompat.getColor(view.context, R.color.color_red)

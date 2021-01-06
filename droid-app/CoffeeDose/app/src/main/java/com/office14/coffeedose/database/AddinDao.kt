@@ -15,10 +15,10 @@ interface AddinDao {
     fun clear()
 
     @Query("delete from add_ins where id not in (:idsList)")
-    fun clearByNotInList(idsList:List<Int>)
+    fun clearByNotInList(idsList: List<Int>)
 
     @Transaction
-    fun refreshAddins(addins:List<AddinDbo>){
+    fun refreshAddins(addins: List<AddinDbo>) {
         insertAllAddins(*addins.toTypedArray())
         clearByNotInList(addins.map { it.id })
     }

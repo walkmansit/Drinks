@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="viewModel"
             type="com.office14.coffeedose.viewmodels.SelectDoseAndAddinsViewModel" />
@@ -11,9 +12,9 @@
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
-        android:background="@color/color_primary_light"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/add_ins_dialog_height">
+        android:layout_height="@dimen/add_ins_dialog_height"
+        android:background="@color/color_primary_light">
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -26,117 +27,121 @@
 
                 <RelativeLayout
                     android:id="@+id/rl_summary"
-                    android:layout_margin="@dimen/spacing_normal_16"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/spacing_normal_16">
+
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tv_drink_name"
-                        android:paddingLeft="12dp"
-                        android:layout_alignParentLeft="true"
-                        android:layout_toLeftOf="@id/tv_summary"
                         style="@style/Base.TextView.Single"
-                        android:layout_alignParentTop="true"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        tools:text="Expresso"/>
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:layout_toStartOf="@id/tv_summary"
+                        android:paddingStart="@dimen/spacing_normal_12"
+                        tools:text="Expresso" />
+
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tv_summary"
-                        android:layout_alignParentRight="true"
-                        android:paddingRight="12dp"
                         style="@style/Base.TextView.Single"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{viewModel.summary}"/>
+                        android:layout_alignParentEnd="true"
+                        android:paddingEnd="@dimen/spacing_normal_12"
+                        android:text="@{viewModel.summary}" />
                 </RelativeLayout>
 
                 <androidx.appcompat.widget.AppCompatSpinner
                     android:id="@+id/spinnerSelectSize"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_below="@id/rl_summary"
                     android:layout_marginLeft="@dimen/spacing_normal_16"
                     android:layout_marginRight="@dimen/spacing_normal_16"
                     android:layout_marginBottom="@dimen/spacing_normal_16"
                     android:background="@drawable/bg_spinner_dropdown"
                     android:popupBackground="@drawable/bg_spinner_dropdown"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
                     android:spinnerMode="dropdown" />
 
                 <LinearLayout
-                    android:layout_below="@id/spinnerSelectSize"
-                    android:layout_above="@id/addButton"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_above="@id/addButton"
+                    android:layout_below="@id/spinnerSelectSize"
                     android:orientation="vertical">
+
                     <ListView
                         android:id="@+id/addinsListView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
                         android:layout_marginLeft="@dimen/font_normal_16"
                         android:layout_marginRight="@dimen/font_normal_16"
                         android:layout_marginBottom="@dimen/font_normal_16"
-                        android:padding="@dimen/spacing_small_8"
                         android:background="@drawable/bg_round_border_with_solid"
                         android:divider="@drawable/divider_vertical"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
+                        android:padding="@dimen/spacing_small_8" />
                 </LinearLayout>
 
 
+                <com.shawnlin.numberpicker.NumberPicker
+                    android:id="@+id/number_picker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/default_button_height"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_margin="@dimen/spacing_normal_16"
+                    android:layout_toStartOf="@id/addButton"
+                    app:np_dividerColor="@color/color_regular_text"
+                    app:np_height="44dp"
+                    app:np_max="30"
+                    app:np_min="1"
+                    app:np_orientation="horizontal"
+                    app:np_selectedTextColor="@color/color_regular_text"
+                    app:np_selectedTextSize="@dimen/font_large_20"
+                    app:np_textColor="@color/color_accent"
+                    app:np_textSize="@dimen/font_normal_16"
+                    app:np_value="1" />
 
-
-                        <com.shawnlin.numberpicker.NumberPicker
-                            android:layout_alignParentLeft="true"
-                            android:layout_alignParentBottom="true"
-                            android:layout_toLeftOf="@id/addButton"
-                            android:id="@+id/number_picker"
-                            android:layout_width="wrap_content"
-                            android:layout_height="@dimen/default_button_height"
-                            app:np_height="44dp"
-                            app:np_dividerColor="@color/color_white"
-                            app:np_orientation="horizontal"
-                            app:np_max="30"
-                            app:np_min="1"
-                            app:np_selectedTextColor="@color/color_white"
-                            app:np_selectedTextSize="@dimen/font_large_20"
-                            app:np_textColor="@color/color_accent"
-                            app:np_textSize="@dimen/font_normal_16"
-                            android:layout_margin="@dimen/spacing_normal_16"
-                            app:np_value="1" />
-
-                        <com.google.android.material.floatingactionbutton.FloatingActionButton
-                            android:id="@+id/addButton"
-                            android:layout_margin="@dimen/spacing_normal_16"
-                            android:layout_alignParentRight="true"
-                            android:layout_alignParentBottom="true"
-                            android:backgroundTint="@color/fab_background_color"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="right|bottom"
-                            android:elevation="@dimen/spacing_tiny_4"
-                            android:onClick="@{() -> viewModel.addIntoOrderDetails()}"
-                            android:src="@drawable/ic_add"
-                            app:tint="@null"
-                            app:borderWidth="0dp"
-                            app:fabSize="normal" />
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/addButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_gravity="end|bottom"
+                    android:layout_margin="@dimen/spacing_normal_16"
+                    android:backgroundTint="@color/fab_background_color"
+                    android:elevation="@dimen/spacing_tiny_4"
+                    android:onClick="@{() -> viewModel.addIntoOrderDetails()}"
+                    android:src="@drawable/ic_add"
+                    app:borderWidth="0dp"
+                    app:fabSize="normal"
+                    app:tint="@null"
+                    android:contentDescription="@string/DoAdd" />
 
             </RelativeLayout>
 
             <LinearLayout
                 android:id="@+id/view_addins_error"
-                android:layout_gravity="center"
-                android:visibility="gone"
-                android:gravity="center"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
                 <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/iv_error"
-                    android:src="@drawable/ic_error_outline_black_24dp"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_error_outline_black_24dp" />
+
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tv_error_text"
-                    android:gravity="center"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:gravity="center" />
             </LinearLayout>
 
         </FrameLayout>

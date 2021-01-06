@@ -1,18 +1,14 @@
 package com.office14.coffeedose.ui.Adapters
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.coffeedose.R
 import com.coffeedose.databinding.ViewOrderAwaitingHeaderBinding
 import com.coffeedose.databinding.ViewOrderAwaitingListItemBinding
 import com.office14.coffeedose.domain.OrderDetailFull
 import com.office14.coffeedose.domain.OrderInfo
-import com.office14.coffeedose.domain.OrderStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,10 +21,12 @@ class OrderAwaitingAdapter() : ListAdapter<DataItem, RecyclerView.ViewHolder>(Di
 
     private val adapterScope = CoroutineScope(Dispatchers.Default)
 
-    fun addHeaderAndSubmitList(data : OrderInfo, orderStatus:String? = null) {
+    fun addHeaderAndSubmitList(data: OrderInfo, orderStatus: String? = null) {
         adapterScope.launch {
 
-            val items = (if (orderStatus == null) listOf(DataItem.Header(data)) else listOf(DataItem.Header(data.copy(statusCode = orderStatus)))) + data.drinks.map { DataItem.OrderDetailsItem(it) }
+            val items = (if (orderStatus == null) listOf(DataItem.Header(data)) else listOf(
+                DataItem.Header(data.copy(statusCode = orderStatus))
+            )) + data.drinks.map { DataItem.OrderDetailsItem(it) }
 
             withContext(Dispatchers.Main) {
                 submitList(items)
@@ -39,7 +37,7 @@ class OrderAwaitingAdapter() : ListAdapter<DataItem, RecyclerView.ViewHolder>(Di
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
             is DataItem.Header -> ITEM_VIEW_TYPE_HEADER
-            is DataItem.OrderDetailsItem-> ITEM_VIEW_TYPE_ITEM
+            is DataItem.OrderDetailsItem -> ITEM_VIEW_TYPE_ITEM
         }
     }
 
@@ -67,7 +65,8 @@ class OrderAwaitingAdapter() : ListAdapter<DataItem, RecyclerView.ViewHolder>(Di
     }
 
 
-    class OrderAwaitingViewHolder constructor (private val binding: ViewOrderAwaitingListItemBinding) : RecyclerView.ViewHolder(binding.root){
+    class OrderAwaitingViewHolder constructor(private val binding: ViewOrderAwaitingListItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: OrderDetailFull) {
             binding.item = item
@@ -77,14 +76,16 @@ class OrderAwaitingAdapter() : ListAdapter<DataItem, RecyclerView.ViewHolder>(Di
         companion object {
             fun from(parent: ViewGroup): OrderAwaitingViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
-                val binding = ViewOrderAwaitingListItemBinding.inflate(layoutInflater, parent, false)
+                val binding =
+                    ViewOrderAwaitingListItemBinding.inflate(layoutInflater, parent, false)
 
                 return OrderAwaitingViewHolder(binding)
             }
         }
     }
 
-    class OrderAwaitingHeaderViewHolder private constructor(private val binding : ViewOrderAwaitingHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
+    class OrderAwaitingHeaderViewHolder private constructor(private val binding: ViewOrderAwaitingHeaderBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: OrderInfo) {
             binding.item = item
@@ -115,11 +116,11 @@ class DiffCallback : DiffUtil.ItemCallback<DataItem>() {
 }
 
 sealed class DataItem {
-    data class OrderDetailsItem(val item: OrderDetailFull): DataItem() {
+    data class OrderDetailsItem(val item: OrderDetailFull) : DataItem() {
         override val id = item.id
     }
 
-    data class Header(val item : OrderInfo): DataItem() {
+    data class Header(val item: OrderInfo) : DataItem() {
         override val id = Int.MIN_VALUE
     }
 

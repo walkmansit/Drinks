@@ -2,37 +2,36 @@ package com.office14.coffeedose.database
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import kotlinx.coroutines.Deferred
 
 @Dao
-interface OrderDao{
+interface OrderDao {
 
     @Query("select * from orders")
-    fun getAll() : LiveData<List<OrderDbo>>
+    fun getAll(): LiveData<List<OrderDbo>>
 
     @Query("select * from orders where finished = 'false'")
-    fun getAllNotFinished() : LiveData<List<OrderDbo>>
+    fun getAllNotFinished(): LiveData<List<OrderDbo>>
 
     @Query("select * from orders where owner = :email")
-    fun getAllForUser(email:String) : LiveData<List<OrderDbo>>
+    fun getAllForUser(email: String): LiveData<List<OrderDbo>>
 
     @Query("select * from orders where owner = :email and finished = 'false'")
-    fun getAllForUserNotFinishedStraight(email:String) : List<OrderDbo>
+    fun getAllForUserNotFinishedStraight(email: String): List<OrderDbo>
 
     @Query("select * from orders where id = :orderId")
-    fun getById(orderId:Int) : LiveData<List<OrderDbo>>
+    fun getById(orderId: Int): LiveData<List<OrderDbo>>
 
     @Query("select * from orders where id = :orderId")
-    fun getByIdStraight(orderId:Int) : List<OrderDbo>
+    fun getByIdStraight(orderId: Int): List<OrderDbo>
 
     @Query("select * from orders where id = :orderId and owner = :email")
-    fun getByIdAndOwner(orderId:Int, email:String) : LiveData<List<OrderDbo>>
+    fun getByIdAndOwner(orderId: Int, email: String): LiveData<List<OrderDbo>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAllOrders(vararg orders: OrderDbo)
 
     @Delete
-    fun delete(order:OrderDbo)
+    fun delete(order: OrderDbo)
 
     @Query("delete from orders where owner = :email")
     fun deleteByUser(email: String)
@@ -44,5 +43,5 @@ interface OrderDao{
     fun clear()
 
     @Query("update orders set status_code = :statusCode, status_name = :statusName where id = :id")
-    fun updateStatusCodeAndNameById(id:Int, statusCode:String, statusName:String)
+    fun updateStatusCodeAndNameById(id: Int, statusCode: String, statusName: String)
 }

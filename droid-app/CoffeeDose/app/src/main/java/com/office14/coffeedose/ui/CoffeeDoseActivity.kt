@@ -37,12 +37,12 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
 
 
     @Inject
-    lateinit var message:String
+    lateinit var message: String
 
     @Inject
     lateinit var abstractViewModelFactory: InjectingSavedStateViewModelFactory
 
-    private lateinit var menuInfoViewModel : MenuInfoViewModel
+    private lateinit var menuInfoViewModel: MenuInfoViewModel
 
     private lateinit var bottomNavigationView: BottomNavigationView
 
@@ -54,7 +54,8 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
         setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
         val viewModelFactory = abstractViewModelFactory.create(this)
-        menuInfoViewModel = ViewModelProvider(this,viewModelFactory).get(MenuInfoViewModel::class.java)
+        menuInfoViewModel =
+            ViewModelProvider(this, viewModelFactory).get(MenuInfoViewModel::class.java)
         setContentView(R.layout.activity_main)
 
         prepareSignIn()
@@ -67,8 +68,9 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
 
     private fun setUpNavigation() {
         bottomNavigationView = findViewById<BottomNavigationView>(R.id.bttm_nav)
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment?
-        NavigationUI.setupWithNavController(bottomNavigationView,navHostFragment!!.navController)
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment?
+        NavigationUI.setupWithNavController(bottomNavigationView, navHostFragment!!.navController)
 
         val badgeDrawable = bottomNavigationView.getOrCreateBadge(R.id.orderFragment)
         badgeDrawable.number = 2
@@ -77,12 +79,12 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
         badgeDrawable2.backgroundColor = resources.getColor(R.color.color_green)
     }
 
-    private fun handleMenuUpdate(){
+    private fun handleMenuUpdate() {
         menuInfoViewModel.orderDetailsCount.observe(this, Observer {
-             if (it == 0)
-                 bottomNavigationView.removeBadge(R.id.orderFragment)
+            if (it == 0)
+                bottomNavigationView.removeBadge(R.id.orderFragment)
             else
-                 bottomNavigationView.getOrCreateBadge(R.id.orderFragment).number = it
+                bottomNavigationView.getOrCreateBadge(R.id.orderFragment).number = it
         })
 
 
@@ -92,23 +94,22 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
         })
     }
 
-    private var successAuthCallback : () -> Unit = {}
+    private var successAuthCallback: () -> Unit = {}
 
-    private fun handleNavigationOnNotification(){
+    private fun handleNavigationOnNotification() {
         //Toast.makeText(this,"Intent ex = ${intent?.extras ?: "empty"}", Toast.LENGTH_LONG)
         val ex = intent.extras
         ex?.let {
-            if (it.containsKey(FromNotificationKey) && it.getBoolean(FromNotificationKey)){
+            if (it.containsKey(FromNotificationKey) && it.getBoolean(FromNotificationKey)) {
                 val navigateId = it.getInt(DestinationFragmentIDKey)
-                if (navigateId == OrderAwatingFragmentID){
+                if (navigateId == OrderAwatingFragmentID) {
                     PreferencesRepository.saveNavigateToOrderAwaitFrag(true)
                 }
             }
         }
     }
 
-    private fun prepareSignIn()
-    {
+    private fun prepareSignIn() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
@@ -144,7 +145,7 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
         }
     }
 
-    private fun firebaseAuthWithGoogle(account: GoogleSignInAccount) : Boolean {
+    private fun firebaseAuthWithGoogle(account: GoogleSignInAccount): Boolean {
         val credential = GoogleAuthProvider.getCredential(account.idToken, null)
         var result = false
         auth.signInWithCredential(credential)
@@ -152,8 +153,7 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
                 result = task.isSuccessful
                 if (task.isSuccessful) {
                     getUserAndUpdateToken(account)
-                }
-                else
+                } else
                     toastAuthFailed()
             }
 
@@ -161,15 +161,15 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
     }
 
     @SuppressLint("ShowToast")
-    private fun toastAuthFailed(){
-        Toast.makeText(this,"Ошибка авторизации",Toast.LENGTH_SHORT).show()
+    private fun toastAuthFailed() {
+        Toast.makeText(this, "Ошибка авторизации", Toast.LENGTH_SHORT).show()
     }
 
 
-    private fun getUserAndUpdateToken(account: GoogleSignInAccount){
+    private fun getUserAndUpdateToken(account: GoogleSignInAccount) {
         val user = auth.currentUser
-        user?.getIdToken(true)?.addOnCompleteListener(this){ tokenIdTask ->
-            if (tokenIdTask.isSuccessful){
+        user?.getIdToken(true)?.addOnCompleteListener(this) { tokenIdTask ->
+            if (tokenIdTask.isSuccessful) {
                 if (tokenIdTask.result != null && tokenIdTask.result!!.token != null) {
                     val token = tokenIdTask.result!!.token!!
                     PreferencesRepository.saveIdToken(token)
@@ -181,12 +181,11 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
                     //menuInfoViewModel.refresh()
                     successAuthCallback()
                 }
-            }
-            else toastAuthFailed()
+            } else toastAuthFailed()
         }
     }
 
-    fun signIn(successCallback:() -> Unit) {
+    fun signIn(successCallback: () -> Unit) {
 
         if (PreferencesRepository.getUserEmail() != EMPTY_STRING)
             logout()
@@ -194,16 +193,16 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
         successAuthCallback = successCallback
         //try sighnIn with current google token
         //if (!firebaseAuthWithGoogle(PreferencesRepository.getGoogleToken())){
-            //if not succeeded try regular way
-            val signInIntent = googleSignInClient.signInIntent
-            signInIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            startActivityForResult(signInIntent, RC_SIGN_IN)
+        //if not succeeded try regular way
+        val signInIntent = googleSignInClient.signInIntent
+        signInIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        startActivityForResult(signInIntent, RC_SIGN_IN)
         //}
     }
 
-    fun logout(){
+    fun logout() {
 
-        if (auth.currentUser != null){
+        if (auth.currentUser != null) {
             FirebaseAuth.getInstance().signOut()
             auth.signOut()
             googleSignInClient.signOut()
@@ -212,7 +211,7 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
 
 
 
-        with(PreferencesRepository){
+        with(PreferencesRepository) {
             menuInfoViewModel.deleteFcmDeviceTokenOnLogOut(getDeviceID(), getIdToken()!!)
             saveUserEmail(EMPTY_STRING)
             saveIdToken(EMPTY_STRING)
@@ -233,14 +232,14 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
         return true
     }
 
-    private fun checkFcmRegToken(){
+    private fun checkFcmRegToken() {
         val fcmRegToken = PreferencesRepository.getFcmRegToken()
-        if (fcmRegToken == PreferencesRepository.EMPTY_STRING){
+        if (fcmRegToken == PreferencesRepository.EMPTY_STRING) {
             getAndUpdateActualFcmToken()
         }
     }
 
-    private fun getAndUpdateActualFcmToken(){
+    private fun getAndUpdateActualFcmToken() {
         FirebaseInstanceId.getInstance().instanceId
             .addOnCompleteListener(OnCompleteListener { task ->
                 if (!task.isSuccessful) {
@@ -255,15 +254,19 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
             })
     }
 
-    fun forceLongPolling(){
+    fun forceLongPolling() {
         menuInfoViewModel.restartLongPolling()
     }
 
-    fun isStarted() : Boolean = lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+    fun isStarted(): Boolean = lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+
+    fun updateTheme(theme: Int) {
+        delegate.localNightMode = theme
+    }
 
     companion object {
-       private const val RC_SIGN_IN = 9001
-       private const val TAG = "CoffeeDoseActivity"
+        private const val RC_SIGN_IN = 9001
+        private const val TAG = "CoffeeDoseActivity"
 
         const val FromNotificationKey = "FromNotificationKey"
         const val DestinationFragmentIDKey = "DestinationFragmentIDKey"

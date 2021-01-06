@@ -8,26 +8,26 @@ import com.office14.coffeedose.domain.User
 @Entity(tableName = "users")
 data class UserDbo(
     @PrimaryKey
-    val email : String,
+    val email: String,
 
     @ColumnInfo(name = "display_name")
-    val displayName:String,
+    val displayName: String,
 
     @ColumnInfo(name = "photo_url")
-    val photoUrl:String,
+    val photoUrl: String,
 
     @ColumnInfo(name = "id_token")
-    val idToken:String,
+    val idToken: String,
 
     @ColumnInfo(name = "fcm_token")
-    val fcmToken:String?
-){
+    val fcmToken: String?
+) {
 
-    constructor(user : User) : this(
-        user.email,user.displayName,user.photoUrl,user.idToken,user.fcmToken
+    constructor(user: User) : this(
+        user.email, user.displayName, user.photoUrl, user.idToken, user.fcmToken
     )
 
     fun toDomainModel() = User(
-        email,displayName,photoUrl,idToken,fcmToken
+        email, displayName, photoUrl, idToken, fcmToken
     )
 }

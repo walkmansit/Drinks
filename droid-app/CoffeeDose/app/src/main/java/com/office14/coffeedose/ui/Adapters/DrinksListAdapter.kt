@@ -9,7 +9,7 @@ import com.coffeedose.databinding.ViewDrinkListItemBinding
 import com.office14.coffeedose.domain.Coffee
 import com.office14.coffeedose.ui.CoffeeItemClickListener
 
-class DrinksListAdapter (private val clickListener: CoffeeItemClickListener) : ListAdapter<Coffee,
+class DrinksListAdapter(private val clickListener: CoffeeItemClickListener) : ListAdapter<Coffee,
         DrinksListAdapter.DrinksViewHolder>(CoffeeItemDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DrinksViewHolder {
@@ -17,11 +17,11 @@ class DrinksListAdapter (private val clickListener: CoffeeItemClickListener) : L
     }
 
     override fun onBindViewHolder(holder: DrinksViewHolder, position: Int) {
-        holder.bind(clickListener,getItem(position))
+        holder.bind(clickListener, getItem(position))
     }
 
-    class DrinksViewHolder private constructor(val binding: ViewDrinkListItemBinding)
-        : RecyclerView.ViewHolder(binding.root) {
+    class DrinksViewHolder private constructor(val binding: ViewDrinkListItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
         fun bind(ciClickListener: CoffeeItemClickListener, item: Coffee) {
             binding.item = item

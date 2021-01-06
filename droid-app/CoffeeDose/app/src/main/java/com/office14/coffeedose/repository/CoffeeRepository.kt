@@ -10,21 +10,24 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class CoffeeRepository @Inject constructor (private val coffeeDao: CoffeeDao, private val coffeeApi : CoffeeApiService) {
+class CoffeeRepository @Inject constructor(
+    private val coffeeDao: CoffeeDao,
+    private val coffeeApi: CoffeeApiService
+) {
 
-    val drinks: LiveData<List<Coffee>> = Transformations.map(coffeeDao.getAllDrinks()){ itDbo ->
+    val drinks: LiveData<List<Coffee>> = Transformations.map(coffeeDao.getAllDrinks()) { itDbo ->
         itDbo.map { it.toDomainModel() }
     }
 
-    suspend fun refreshDrinks(){
+    suspend fun refreshDrinks() {
         /*try {*/
-            withContext(Dispatchers.IO) {
-                val drinksResponse = coffeeApi.getDrinksAsync().await()
-                if (drinksResponse.hasError())
-                    throw HttpExceptionEx(drinksResponse.getError())
-                else
-                    coffeeDao.refreshDrinks(drinksResponse.payload!!.map { it.toDataBaseModel() })
-            }
+        withContext(Dispatchers.IO) {
+            val drinksResponse = coffeeApi.getDrinksAsync().await()
+            if (drinksResponse.hasError())
+                throw HttpExceptionEx(drinksResponse.getError())
+            else
+                coffeeDao.refreshDrinks(drinksResponse.payload!!.map { it.toDataBaseModel() })
+        }
         /*}
         catch (ex:Exception){
             throw ex

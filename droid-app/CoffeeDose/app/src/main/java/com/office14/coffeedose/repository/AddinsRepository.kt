@@ -10,21 +10,25 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class AddinsRepository @Inject constructor(private val addinsDatabaseDao: AddinDao, private val coffeeApi : CoffeeApiService) {
+class AddinsRepository @Inject constructor(
+    private val addinsDatabaseDao: AddinDao,
+    private val coffeeApi: CoffeeApiService
+) {
 
-    val addins: LiveData<List<Addin>> = Transformations.map(addinsDatabaseDao.getAllAddins()){ itDbo ->
-        itDbo.map { it.toDomainModel() }
-    }
+    val addins: LiveData<List<Addin>> =
+        Transformations.map(addinsDatabaseDao.getAllAddins()) { itDbo ->
+            itDbo.map { it.toDomainModel() }
+        }
 
-    suspend fun refreshAddins(){
+    suspend fun refreshAddins() {
         /*try {*/
-            withContext(Dispatchers.IO){
-                val addinsResponse = coffeeApi.getAddinsAsync().await()
-                if (addinsResponse.hasError())
-                    throw HttpExceptionEx(addinsResponse.getError())
-                else
-                    addinsDatabaseDao.refreshAddins(addinsResponse.payload!!.map { it.toDataBaseModel() })
-            }
+        withContext(Dispatchers.IO) {
+            val addinsResponse = coffeeApi.getAddinsAsync().await()
+            if (addinsResponse.hasError())
+                throw HttpExceptionEx(addinsResponse.getError())
+            else
+                addinsDatabaseDao.refreshAddins(addinsResponse.payload!!.map { it.toDataBaseModel() })
+        }
         /*}
         catch (ex: Exception){
             Log.d("AddinsRepository.refreshAddins", ex.message?:"")

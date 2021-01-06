@@ -1,7 +1,14 @@
 <resources>
 
-    <style name="AppTheme.AppBarOverlay" parent = "ThemeOverlay.MaterialComponents.Dark.ActionBar"/>
-    <style name="AppTheme.PopupOverlay" parent = "ThemeOverlay.MaterialComponents.Light"/>
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" >
+        <item name="android:colorBackground">@color/color_primary</item>
+        <item name="android:textColorPrimary">@color/color_regular_text</item>
+    </style>
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light" >
+        <item name="android:colorBackground">@color/color_primary</item>
+        <item name="android:textColor">@color/color_regular_text</item>
+    </style>
 
     <style name="ActivityTransitions" parent="android:style/Animation.Activity">
         <item name="android:activityOpenEnterAnimation">@anim/bottom_up</item>
@@ -13,13 +20,11 @@
     <style name="Base"></style>
 
     <style name="Base.EditText" parent="Base">
-        <item name="android:textColor">@color/color_white</item>
         <item name="android:textSize">@dimen/font_normal_16</item>
         <item name="android:paddingTop">4dp</item>
     </style>
 
     <style name="Base.TextView" parent="Base">
-        <item name="android:textColor">@color/color_white</item>
         <item name="android:textSize">@dimen/font_normal_16</item>
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
@@ -55,6 +60,11 @@
         <item name="android:background">@color/color_primary</item>
         <item name="itemBackground">@color/menu_item_text_color</item>
         <item name="itemTextColor">@color/menu_item_text_color</item>
+    </style>
+
+    <style name="ToolBarStyle" parent="Theme.AppCompat">
+        <item name="android:textColorPrimary">@color/color_regular_text</item>
+        <item name="actionMenuTextColor">@color/color_regular_text</item>
     </style>
     <!--<item name="itemIconTint">@color/navigation_bar_txt_color</item>-->
 

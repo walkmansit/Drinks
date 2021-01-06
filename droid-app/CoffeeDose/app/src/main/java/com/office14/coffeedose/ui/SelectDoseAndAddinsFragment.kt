@@ -27,7 +27,6 @@ import com.office14.coffeedose.extensions.setBooleanVisibility
 import com.office14.coffeedose.ui.Adapters.AddinCheckListener
 import com.office14.coffeedose.ui.Adapters.AddinsListAdapter
 import com.office14.coffeedose.ui.Adapters.SizeSpinnerAdapter
-import com.office14.coffeedose.viewmodels.OrderDetailsViewModel
 import com.office14.coffeedose.viewmodels.SelectDoseAndAddinsViewModel
 import com.shawnlin.numberpicker.NumberPicker
 import dagger.android.AndroidInjector
@@ -40,7 +39,11 @@ import javax.inject.Inject
 /**
  * A simple [Fragment] subclass.
  */
-class SelectDoseAndAddinsFragment (private val onDrinkAddListener:OnDrinkAddListener, private val drinkId:Int, private val drinkName:String) :  BottomSheetDialogFragment(),
+class SelectDoseAndAddinsFragment(
+    private val onDrinkAddListener: OnDrinkAddListener,
+    private val drinkId: Int,
+    private val drinkName: String
+) : BottomSheetDialogFragment(),
     HasAndroidInjector, HasDefaultViewModelProviderFactory {
 
     @Inject
@@ -51,8 +54,17 @@ class SelectDoseAndAddinsFragment (private val onDrinkAddListener:OnDrinkAddList
 
     private val viewModel: SelectDoseAndAddinsViewModel by viewModels()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View? {
-        val binding: FragmentSelectDoseAndAddinsBinding = DataBindingUtil.inflate(inflater,R.layout.fragment_select_dose_and_addins,container,false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val binding: FragmentSelectDoseAndAddinsBinding = DataBindingUtil.inflate(
+            inflater,
+            R.layout.fragment_select_dose_and_addins,
+            container,
+            false
+        )
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
@@ -74,42 +86,42 @@ class SelectDoseAndAddinsFragment (private val onDrinkAddListener:OnDrinkAddList
     }
 
 
-    private fun setPeekHeight(view:View){
+    private fun setPeekHeight(view: View) {
         view.viewTreeObserver.addOnGlobalLayoutListener {
             val dialog = dialog as BottomSheetDialog?
-            dialog?.behavior?.peekHeight = resources.getDimensionPixelSize(R.dimen.add_ins_dialog_height)
+            dialog?.behavior?.peekHeight =
+                resources.getDimensionPixelSize(R.dimen.add_ins_dialog_height)
         }
     }
 
-    private fun setTitle(textView:TextView){
+    private fun setTitle(textView: TextView) {
         textView.text = drinkName
     }
 
     private fun initSwipeToRefresh(swipeRefresh: SwipeRefreshLayout) {
         swipeRefresh.setOnRefreshListener { viewModel.refreshData(true) }
         viewModel.isRefreshing.observe(viewLifecycleOwner, Observer {
-            if (it != null){
+            if (it != null) {
                 swipeRefresh.isRefreshing = it
             }
-        } )
+        })
     }
 
     private fun initErrorHandling(binding: FragmentSelectDoseAndAddinsBinding) {
         viewModel.errorMessage.observe(viewLifecycleOwner, Observer {
 
-            if (it != null){
+            if (it != null) {
                 binding.viewAddinsRoot.setBooleanVisibility(false)
                 binding.viewAddinsError.setBooleanVisibility(true)
                 binding.tvErrorText.text = it
-            }
-            else {
+            } else {
                 binding.viewAddinsRoot.setBooleanVisibility(true)
                 binding.viewAddinsError.setBooleanVisibility(false)
             }
         })
     }
 
-    private  fun initSpinner(view : Spinner){
+    private fun initSpinner(view: Spinner) {
         val spinnerAdapter = SizeSpinnerAdapter(requireContext())
         view.adapter = spinnerAdapter
 
@@ -118,12 +130,13 @@ class SelectDoseAndAddinsFragment (private val onDrinkAddListener:OnDrinkAddList
                 spinnerAdapter.setItems(viewModel.sizes.value!!)
         })
 
-        view.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+        view.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {
                 TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
             }
 
-            override fun onItemSelected(parent: AdapterView<*>?,view: View?,position: Int,id: Long
+            override fun onItemSelected(
+                parent: AdapterView<*>?, view: View?, position: Int, id: Long
             ) {
                 viewModel.onSelectedSizeIndexChanged(position)
             }
@@ -131,8 +144,15 @@ class SelectDoseAndAddinsFragment (private val onDrinkAddListener:OnDrinkAddList
         }
     }
 
-    private fun initAddinsAdapter(view : ListView){
-        val addinsListAdapter = AddinsListAdapter(requireContext(), AddinCheckListener { addin, isChecked  -> viewModel.updateTotalOnAddinCheck(addin, isChecked)})
+    private fun initAddinsAdapter(view: ListView) {
+        val addinsListAdapter = AddinsListAdapter(
+            requireContext(),
+            AddinCheckListener { addin, isChecked ->
+                viewModel.updateTotalOnAddinCheck(
+                    addin,
+                    isChecked
+                )
+            })
         view.adapter = addinsListAdapter
 
         viewModel.addins.observe(viewLifecycleOwner, Observer {
@@ -141,16 +161,22 @@ class SelectDoseAndAddinsFragment (private val onDrinkAddListener:OnDrinkAddList
         })
     }
 
-    private fun initCountPicker(numberPicker : NumberPicker){
-        viewModel.count.observe(viewLifecycleOwner, Observer { numberPicker.value = viewModel.count.value!! })
+    private fun initCountPicker(numberPicker: NumberPicker) {
+        viewModel.count.observe(
+            viewLifecycleOwner,
+            Observer { numberPicker.value = viewModel.count.value!! })
 
-        numberPicker.setOnValueChangedListener { picker, oldVal, newVal -> viewModel.updateCount(newVal) }
+        numberPicker.setOnValueChangedListener { picker, oldVal, newVal ->
+            viewModel.updateCount(
+                newVal
+            )
+        }
     }
 
-    private fun handleNavigating(){
+    private fun handleNavigating() {
         viewModel.navigateDrinks.observe(viewLifecycleOwner, Observer {
             it?.let {
-                if (it){
+                if (it) {
                     onDrinkAddListener.onDrinkAdd()
                     viewModel.doneNavigating()
                     dismiss()
@@ -162,7 +188,8 @@ class SelectDoseAndAddinsFragment (private val onDrinkAddListener:OnDrinkAddList
     interface OnDrinkAddListener {
         fun onDrinkAdd()
     }
-    companion object{
+
+    companion object {
         const val TAG = "SelectDoseAndAddinsFragment"
     }
 

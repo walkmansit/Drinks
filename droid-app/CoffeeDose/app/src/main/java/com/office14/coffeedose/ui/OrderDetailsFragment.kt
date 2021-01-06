@@ -1,16 +1,15 @@
 package com.office14.coffeedose.ui
 
 
-import android.content.Context
 import android.os.Bundle
 import android.view.*
 import android.widget.EditText
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.Observer
@@ -20,16 +19,14 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-
-
 import com.coffeedose.R
 import com.coffeedose.databinding.FragmentOrderBinding
 import com.office14.coffeedose.di.InjectingSavedStateViewModelFactory
+import com.office14.coffeedose.extensions.setBooleanVisibility
 import com.office14.coffeedose.ui.Adapters.OrderDetailsAdapter
 import com.office14.coffeedose.ui.Adapters.OrderDetailsItemTouchHelperCallback
 import com.office14.coffeedose.ui.Adapters.SwipeListener
 import com.office14.coffeedose.viewmodels.OrderDetailsViewModel
-import com.office14.coffeedose.extensions.setBooleanVisibility
 import dagger.android.support.DaggerFragment
 import kotlinx.android.synthetic.main.fragment_order.*
 import javax.inject.Inject
@@ -45,11 +42,16 @@ class OrderDetailsFragment : DaggerFragment(), HasDefaultViewModelProviderFactor
     //private lateinit var viewModel : OrderDetailsViewModel
     private val viewModel: OrderDetailsViewModel by viewModels()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
 
         //viewModel  = ViewModelProvider(this, OrderDetailsViewModel.Factory(requireNotNull(this.activity).application)).get(OrderDetailsViewModel::class.java)
 
-        val binding : FragmentOrderBinding = DataBindingUtil.inflate(inflater,R.layout.fragment_order,container,false)
+        val binding: FragmentOrderBinding =
+            DataBindingUtil.inflate(inflater, R.layout.fragment_order, container, false)
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
         setHasOptionsMenu(true)
@@ -76,20 +78,20 @@ class OrderDetailsFragment : DaggerFragment(), HasDefaultViewModelProviderFactor
 
     }
 
-    private fun handleCommentInput(editText: EditText){
+    private fun handleCommentInput(editText: EditText) {
         editText.doOnTextChanged { text, _, _, _ -> viewModel.comment = text.toString() }
     }
 
 
-    private fun initOnbackPressedCallBack(){
+    private fun initOnbackPressedCallBack() {
         val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
             findNavController().navigate(OrderDetailsFragmentDirections.actionOrderFragmentToDrinksFragment())
         }
 
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,callback)
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
     }
 
-    private fun handleVisibility(){
+    private fun handleVisibility() {
         viewModel.isEmpty.observe(viewLifecycleOwner, Observer {
             rl_content.setBooleanVisibility(!it)
             tv_empty_order_details.setBooleanVisibility(it)
@@ -103,33 +105,36 @@ class OrderDetailsFragment : DaggerFragment(), HasDefaultViewModelProviderFactor
         })
     }
 
-    private fun initNavigation(){
+    private fun initNavigation() {
         viewModel.navigateOrderAwaiting.observe(viewLifecycleOwner, Observer {
             findNavController().navigate(OrderDetailsFragmentDirections.actionOrderFragmentToOrderAwaitingFragment())
             viewModel.doneNavigating()
         })
     }
 
-    private fun handleShowError(){
+    private fun handleShowError() {
         viewModel.errorMessage.observe(viewLifecycleOwner, Observer {
             it?.let {
-                Toast.makeText(this.context,it,Toast.LENGTH_LONG).show()
+                Toast.makeText(this.context, it, Toast.LENGTH_LONG).show()
                 viewModel.hideErrorMessage()
             }
         })
     }
 
 
-    private  fun initRecyclerView( recyclerView: RecyclerView){
+    private fun initRecyclerView(recyclerView: RecyclerView) {
         val rvAdapter = OrderDetailsAdapter()
 
-        val touchCallback = OrderDetailsItemTouchHelperCallback(requireContext(),rvAdapter, SwipeListener { orderDetails -> viewModel.deleteOrderDetailsItem(orderDetails) })
+        val touchCallback = OrderDetailsItemTouchHelperCallback(
+            requireContext(),
+            rvAdapter,
+            SwipeListener { orderDetails -> viewModel.deleteOrderDetailsItem(orderDetails) })
 
         ItemTouchHelper(touchCallback).attachToRecyclerView(recyclerView)
 
         val dividerDecor = DividerItemDecoration(this.context, DividerItemDecoration.VERTICAL)
 
-        with(recyclerView){
+        with(recyclerView) {
             adapter = rvAdapter
             layoutManager = LinearLayoutManager(this.context)
             addItemDecoration(dividerDecor)
@@ -140,7 +145,7 @@ class OrderDetailsFragment : DaggerFragment(), HasDefaultViewModelProviderFactor
         })
     }
 
-    private fun initToolbar(){
+    private fun initToolbar() {
         val toolbar = (activity as AppCompatActivity).supportActionBar
         toolbar?.let {
             it.setDisplayHomeAsUpEnabled(false)
@@ -151,11 +156,11 @@ class OrderDetailsFragment : DaggerFragment(), HasDefaultViewModelProviderFactor
 
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.order_detals_menu,menu)
+        inflater.inflate(R.menu.order_detals_menu, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when(item.itemId){
+        return when (item.itemId) {
             R.id.clearOrderDetails -> {
                 viewModel.clearOrderDetails()
                 true
@@ -168,10 +173,10 @@ class OrderDetailsFragment : DaggerFragment(), HasDefaultViewModelProviderFactor
         }
     }
 
-    private fun handleLoginRequired(){
+    private fun handleLoginRequired() {
         viewModel.needLogIn.observe(requireActivity(), Observer {
-            if (it){
-                (activity as CoffeeDoseActivity).signIn{
+            if (it) {
+                (activity as CoffeeDoseActivity).signIn {
                     viewModel.confirmOrder()
                 }
                 viewModel.doneLogin()
@@ -179,9 +184,9 @@ class OrderDetailsFragment : DaggerFragment(), HasDefaultViewModelProviderFactor
         })
     }
 
-    private fun handleForceLongPolling(){
+    private fun handleForceLongPolling() {
         viewModel.forceLongPolling.observe(requireActivity(), Observer {
-            if (it){
+            if (it) {
                 (activity as CoffeeDoseActivity).forceLongPolling()
                 viewModel.doneForceLongPolling()
             }

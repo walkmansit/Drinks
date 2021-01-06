@@ -1,2 +1,2 @@
 include ':app'
-rootProject.name='CoffeeDose'
+rootProject.name='com.office14.coffeedose'

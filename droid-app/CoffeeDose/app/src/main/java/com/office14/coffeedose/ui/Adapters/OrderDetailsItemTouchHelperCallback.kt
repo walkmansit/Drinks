@@ -1,24 +1,29 @@
 package com.office14.coffeedose.ui.Adapters
 
 import android.content.Context
-import android.graphics.*
-import android.graphics.drawable.ColorDrawable
-import androidx.core.content.ContextCompat
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.coffeedose.R
 
 
-class OrderDetailsItemTouchHelperCallback(context: Context, private val adapter : OrderDetailsAdapter, private val swipeListener: SwipeListener) : ItemTouchHelper.Callback() {
+class OrderDetailsItemTouchHelperCallback(
+    context: Context,
+    private val adapter: OrderDetailsAdapter,
+    private val swipeListener: SwipeListener
+) : ItemTouchHelper.Callback() {
 
     //private val deleteIcon = ContextCompat.getDrawable(context, R.drawable.ic_delete_white)
     //private val intrinsicWidth = deleteIcon.intrinsicWidth
     //private val intrinsicHeight = deleteIcon.intrinsicHeight
     //private val background = ColorDrawable()
     private val background = context.resources.getDrawable(R.drawable.bg_swipe_to_delete)
+
     //private val backgroundColor = ContextCompat.getColor(context, R.color.color_blue_light)
     private val clearPaint = Paint().apply { xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR) }
-
 
 
     /*private val bgRect = RectF()
@@ -47,7 +52,7 @@ class OrderDetailsItemTouchHelperCallback(context: Context, private val adapter 
     }
 
     override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
-        if (actionState != ItemTouchHelper.ACTION_STATE_IDLE && viewHolder is ItemTouchViewHolder){
+        if (actionState != ItemTouchHelper.ACTION_STATE_IDLE && viewHolder is ItemTouchViewHolder) {
             viewHolder.onItemSelected()
         }
         super.onSelectedChanged(viewHolder, actionState)
@@ -70,7 +75,8 @@ class OrderDetailsItemTouchHelperCallback(context: Context, private val adapter 
 
         val itemView = viewHolder.itemView
 
-        val deleteIcon = itemView.resources.getDrawable(R.drawable.ic_delete_white, itemView.context.theme)
+        val deleteIcon =
+            itemView.resources.getDrawable(R.drawable.ic_delete_white, itemView.context.theme)
 
         val intrinsicWidth = deleteIcon.intrinsicWidth
         val intrinsicHeight = deleteIcon.intrinsicHeight
@@ -79,13 +85,24 @@ class OrderDetailsItemTouchHelperCallback(context: Context, private val adapter 
         val isCanceled = dX == 0f && !isCurrentlyActive
 
         if (isCanceled) {
-            clearCanvas(c, itemView.right + dX, itemView.top.toFloat(), itemView.right.toFloat(), itemView.bottom.toFloat())
+            clearCanvas(
+                c,
+                itemView.right + dX,
+                itemView.top.toFloat(),
+                itemView.right.toFloat(),
+                itemView.bottom.toFloat()
+            )
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
             return
         }
 
         //background.color = backgroundColor
-        background.setBounds(itemView.right + dX.toInt(), itemView.top, itemView.right, itemView.bottom)
+        background.setBounds(
+            itemView.right + dX.toInt(),
+            itemView.top,
+            itemView.right,
+            itemView.bottom
+        )
         background.draw(c)
 
         // Calculate position of delete icon

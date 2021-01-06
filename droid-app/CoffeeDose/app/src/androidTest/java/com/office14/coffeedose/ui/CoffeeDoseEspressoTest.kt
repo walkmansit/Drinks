@@ -91,7 +91,7 @@ class CoffeeDoseEspressoTest {
 
         val catalogItem = onView(
             childAtPosition(
-                withId(R.id.drinks_rv),0
+                withId(R.id.drinks_rv), 0
             )
         )
 
@@ -132,7 +132,7 @@ class CoffeeDoseEspressoTest {
 
         val orderDetailsItem = onView(
             childAtPosition(
-                withId(R.id.rv_order_details),0
+                withId(R.id.rv_order_details), 0
             )
         )
         orderDetailsItem.check(matches(isDisplayed()))

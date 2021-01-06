@@ -12,7 +12,7 @@ interface OrderDetailDao {
 
     @Transaction
     @Query("select * from order_details where order_id is null and owner = :email")
-    fun getUnAttachedDetailsForUserStraight(email:String): List<OrderDetailAndDrinkAndSize>
+    fun getUnAttachedDetailsForUserStraight(email: String): List<OrderDetailAndDrinkAndSize>
 
     @Transaction
     @Query("select * from order_details where order_id is null and owner is null")
@@ -24,17 +24,17 @@ interface OrderDetailDao {
 
     @Transaction
     @Query("select * from order_details where order_id is null and owner = :email")
-    fun getUnAttachedDetailsForUser(email:String): LiveData<List<OrderDetailAndDrinkAndSize>>
+    fun getUnAttachedDetailsForUser(email: String): LiveData<List<OrderDetailAndDrinkAndSize>>
 
     @Query("update order_details set count = :count where id = :id")
-    fun updateCountWithOrderDetailsId(id:Int, count:Int)
+    fun updateCountWithOrderDetailsId(id: Int, count: Int)
 
     @Transaction
     @Query("select * from order_details where order_id = :orderId")
-    fun getDetailsByOrderId(orderId:Int): LiveData<List<OrderDetailAndDrinkAndSize>>
+    fun getDetailsByOrderId(orderId: Int): LiveData<List<OrderDetailAndDrinkAndSize>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAllOrderDetails(vararg orderDetails: OrderDetailDbo)  : List<Long>
+    fun insertAllOrderDetails(vararg orderDetails: OrderDetailDbo): List<Long>
 
     @Query("delete from order_details where order_id is null")
     fun deleteUnAttached()
@@ -49,7 +49,7 @@ interface OrderDetailDao {
     fun deleteByOrderId(orderId:Int)*/
 
     @Delete
-    fun delete(orderDetails : OrderDetailDbo)
+    fun delete(orderDetails: OrderDetailDbo)
 
     @Query("delete from order_details")
     fun clear()
@@ -58,15 +58,15 @@ interface OrderDetailDao {
     fun insertAllOrderDetailsToAddInsCross(vararg crossRefs: OrderDetailsAndAddinsCrossRef)
 
     @Transaction
-    fun insertOrderDetailsAndAddIns(vararg orderDetails: OrderDetailsContainer){
+    fun insertOrderDetailsAndAddIns(vararg orderDetails: OrderDetailsContainer) {
         val newIds = insertAllOrderDetails(*orderDetails.map { it.orderDetails }.toTypedArray())
 
-        val crossRefsList : MutableList<OrderDetailsAndAddinsCrossRef> = mutableListOf()
+        val crossRefsList: MutableList<OrderDetailsAndAddinsCrossRef> = mutableListOf()
 
-        for ((index, odId) in newIds.withIndex()){
+        for ((index, odId) in newIds.withIndex()) {
 
             orderDetails[index].addIns.forEach {
-                crossRefsList.add( OrderDetailsAndAddinsCrossRef(odId.toInt(),it.id) )
+                crossRefsList.add(OrderDetailsAndAddinsCrossRef(odId.toInt(), it.id))
             }
         }
 
@@ -74,19 +74,19 @@ interface OrderDetailDao {
     }
 
     @Query("update order_details set owner = :email where order_id is null and owner is null ")
-    fun updateUnattachedOrderDetailsWithEmail(email:String): Int
+    fun updateUnattachedOrderDetailsWithEmail(email: String): Int
 
     @Query("update order_details set order_id = :orderId where order_id is null and owner = :email ")
-    fun updateAttachedOrderDetailsWithOrderId(email:String, orderId:Int): Int
+    fun updateAttachedOrderDetailsWithOrderId(email: String, orderId: Int): Int
 
-   /* @Transaction
-    fun updateUnattachedOrderDetailsWithEmail(email:String){
-        val list = getUnAttachedDetailsWithoutOwner().value?.map { it.orderDetail }
-        list?.let {
-            it.forEach {
-                it.owner = email
-            }
-            insertAllOrderDetails(*it.toTypedArray())
-        }
-    }*/
+    /* @Transaction
+     fun updateUnattachedOrderDetailsWithEmail(email:String){
+         val list = getUnAttachedDetailsWithoutOwner().value?.map { it.orderDetail }
+         list?.let {
+             it.forEach {
+                 it.owner = email
+             }
+             insertAllOrderDetails(*it.toTypedArray())
+         }
+     }*/
 }

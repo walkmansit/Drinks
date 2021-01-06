@@ -18,10 +18,10 @@ interface CoffeeDao {
     fun clear()
 
     @Query("delete from drinks where id not in (:idsList)")
-    fun clearByNotInList(idsList:List<Int>)
+    fun clearByNotInList(idsList: List<Int>)
 
     @Transaction
-    fun refreshDrinks(drinks : List<CoffeeDbo>){
+    fun refreshDrinks(drinks: List<CoffeeDbo>) {
         insertAllDrinks(*drinks.toTypedArray())
         clearByNotInList(drinks.map { it.id })
     }

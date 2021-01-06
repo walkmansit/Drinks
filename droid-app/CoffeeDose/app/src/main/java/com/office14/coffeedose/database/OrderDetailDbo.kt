@@ -1,7 +1,10 @@
 package com.office14.coffeedose.database
 
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.ForeignKey.CASCADE
+import androidx.room.PrimaryKey
 import com.office14.coffeedose.domain.OrderDetail
 
 
@@ -29,10 +32,10 @@ import com.office14.coffeedose.domain.OrderDetail
     ]*/
 )
 // Using only for INSERT new rows
-data class OrderDetailDbo (
+data class OrderDetailDbo(
 
     @PrimaryKey(autoGenerate = true)
-    val id : Int,
+    val id: Int,
 
     @ColumnInfo(name = "drink_id")
     val drinkId: Int,
@@ -41,27 +44,32 @@ data class OrderDetailDbo (
     val drinkName: String?,*/
 
     @ColumnInfo(name = "size_id")
-    val sizeId:Int,
+    val sizeId: Int,
 
     /*@ColumnInfo(name = "size_name")
     val sizeName: String?,*/
 
     @ColumnInfo(name = "order_id")
-    var orderId:Int?,
+    var orderId: Int?,
 
     @ColumnInfo(name = "owner")
-    var owner : String?,
+    var owner: String?,
 
-    val count:Int
-){
+    val count: Int
+) {
 
-    constructor(orderDetail : OrderDetail) : this(
-        orderDetail.id,orderDetail.drinkId,orderDetail.sizeId,orderDetail.orderId,null,orderDetail.count
+    constructor(orderDetail: OrderDetail) : this(
+        orderDetail.id,
+        orderDetail.drinkId,
+        orderDetail.sizeId,
+        orderDetail.orderId,
+        null,
+        orderDetail.count
         //, orderDetail.addIns.map { AddinDbo(it) }
     )
 
     fun toDomainModel() = OrderDetail(
-        id,drinkId,sizeId,orderId,count,owner,listOf()
+        id, drinkId, sizeId, orderId, count, owner, listOf()
     )
 }
 
@@ -82,10 +90,10 @@ data class OrderDetailsAndAddinsCrossRef(
     val addinId: Int
 )
 
-class OrderDetailsContainer(orderDetail: OrderDetail){
+class OrderDetailsContainer(orderDetail: OrderDetail) {
 
-    val orderDetails : OrderDetailDbo = OrderDetailDbo(orderDetail)
+    val orderDetails: OrderDetailDbo = OrderDetailDbo(orderDetail)
 
-    val addIns : List<AddinDbo> = orderDetail.addIns.map { AddinDbo(it) }
+    val addIns: List<AddinDbo> = orderDetail.addIns.map { AddinDbo(it) }
 
 }

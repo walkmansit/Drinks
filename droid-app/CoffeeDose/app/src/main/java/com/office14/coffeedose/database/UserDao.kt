@@ -1,7 +1,10 @@
 package com.office14.coffeedose.database
 
 import androidx.lifecycle.LiveData
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 
 @Dao
 interface UserDao {
@@ -15,5 +18,5 @@ interface UserDao {
     fun clear()
 
     @Query("select * from users where email = :email ")
-    fun getByEmail(email : String) : LiveData<List<UserDbo>>
+    fun getByEmail(email: String): LiveData<List<UserDbo>>
 }

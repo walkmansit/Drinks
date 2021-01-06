@@ -16,9 +16,11 @@ import com.office14.coffeedose.repository.UsersRepository
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
-class MenuInfoViewModel @Inject constructor(application: Application,private val orderDetailsRepository : OrderDetailsRepository,
-                                            private val ordersRepository : OrdersRepository,
-                                            private val usersRepository : UsersRepository) : AndroidViewModel(application) {
+class MenuInfoViewModel @Inject constructor(
+    application: Application, private val orderDetailsRepository: OrderDetailsRepository,
+    private val ordersRepository: OrdersRepository,
+    private val usersRepository: UsersRepository
+) : AndroidViewModel(application) {
 
     private val viewModelJob = Job()
     private val viewModelScope = CoroutineScope(viewModelJob + Dispatchers.Main)
@@ -26,30 +28,31 @@ class MenuInfoViewModel @Inject constructor(application: Application,private val
     private val pollingJob = Job()
     private val pollingScope = CoroutineScope(pollingJob + Dispatchers.Main)
 
-    val email  = mutableLiveData(EMPTY_STRING)
-    private var app : Application = application
+    val email = mutableLiveData(EMPTY_STRING)
+    private var app: Application = application
 
     val orderDetailsCount = orderDetailsRepository.unAttachedOrderDetailsCount(email)
     private val unattachedOrderDetails = orderDetailsRepository.unAttachedOrderDetails(email)
 
     private var isPolling = false
 
-    val order : LiveData<Order> = Transformations.map(ordersRepository.getCurrentQueueOrderByUser(email)) {
-        if (it != null) {
-            if (!isPolling)
-                longPollingOrderStatus()
-            return@map it
-        }
-        return@map null
+    val order: LiveData<Order> =
+        Transformations.map(ordersRepository.getCurrentQueueOrderByUser(email)) {
+            if (it != null) {
+                if (!isPolling)
+                    longPollingOrderStatus()
+                return@map it
+            }
+            return@map null
 
-    }
+        }
 
     init {
         refreshOrderDetailsByUser()
     }
 
-    val currentOrderBadgeColor = Transformations.map(ordersRepository.queueOrderStatus(email)){
-        return@map when(it){
+    val currentOrderBadgeColor = Transformations.map(ordersRepository.queueOrderStatus(email)) {
+        return@map when (it) {
             OrderStatus.READY -> ContextCompat.getColor(app, R.color.color_green)
             OrderStatus.COOKING -> ContextCompat.getColor(app, R.color.color_yellow)
             OrderStatus.FAILED -> ContextCompat.getColor(app, R.color.color_red)
@@ -57,9 +60,9 @@ class MenuInfoViewModel @Inject constructor(application: Application,private val
         }
     }
 
-    var user : User? = null
+    var user: User? = null
 
-    fun refreshOrderDetailsByUser(){
+    fun refreshOrderDetailsByUser() {
 
         cancelJob()
 
@@ -68,18 +71,23 @@ class MenuInfoViewModel @Inject constructor(application: Application,private val
 
         viewModelScope.launch {
 
-            if (email.value != EMPTY_STRING){
+            if (email.value != EMPTY_STRING) {
 
                 user = usersRepository.getUserByEmail(email.value!!)
 
-                ordersRepository.getLastOrderForUserAndPutIntoDB(PreferencesRepository.getIdToken(),email.value!!)
+                ordersRepository.getLastOrderForUserAndPutIntoDB(
+                    PreferencesRepository.getIdToken(),
+                    email.value!!
+                )
 
                 if (oldEmail == EMPTY_STRING) {
-                    val unattachedDetailsForUser = orderDetailsRepository.unattachedOrderDetailsForUser(email.value!!)
+                    val unattachedDetailsForUser =
+                        orderDetailsRepository.unattachedOrderDetailsForUser(email.value!!)
 
-                    val unattachedDetailsFree = orderDetailsRepository.unattachedOrderDetailsWithoutUser()
+                    val unattachedDetailsFree =
+                        orderDetailsRepository.unattachedOrderDetailsWithoutUser()
 
-                    if (unattachedDetailsFree.isNotEmpty() ){
+                    if (unattachedDetailsFree.isNotEmpty()) {
                         if (unattachedDetailsForUser.isNotEmpty())
                             orderDetailsRepository.deleteOrderDetailsByEmail(email.value!!)
 
@@ -95,41 +103,44 @@ class MenuInfoViewModel @Inject constructor(application: Application,private val
             restartLongPolling()
     }
 
-    fun restartLongPolling(){
+    fun restartLongPolling() {
         if (isPolling)
             _job.cancel()
 
         longPollingOrderStatus()
     }
 
-    private lateinit var _job : Job
+    private lateinit var _job: Job
 
-    private fun longPollingOrderStatus(){
+    private fun longPollingOrderStatus() {
 
         isPolling = true
 
         _job = pollingScope.launch {
 
             while (isActive) {
-                ordersRepository.refreshLastOrderStatus(PreferencesRepository.getIdToken(),email.value!!)
+                ordersRepository.refreshLastOrderStatus(
+                    PreferencesRepository.getIdToken(),
+                    email.value!!
+                )
             }
         }
 
-        order.observeForever(Observer {
-            if (it?.statusName?.toLowerCase() == "ready"){
+        order.observeForever {
+            if (it?.statusName?.toLowerCase() == "ready") {
                 cancelJob()
             }
-        })
+        }
     }
 
-    private fun cancelJob(){
-        if (isPolling){
+    private fun cancelJob() {
+        if (isPolling) {
             _job.cancel()
             isPolling = false
         }
     }
 
-    fun updateUser(){
+    fun updateUser() {
         viewModelScope.launch {
             user?.let {
                 usersRepository.updateUser(it)
@@ -143,16 +154,20 @@ class MenuInfoViewModel @Inject constructor(application: Application,private val
         pollingJob.cancel()
     }
 
-    fun updateFcmDeviceToken(){
+    fun updateFcmDeviceToken() {
         viewModelScope.launch {
-            ordersRepository.updateFcmDeviceToken(PreferencesRepository.getDeviceID(),PreferencesRepository.getFcmRegToken()!! ,PreferencesRepository.getIdToken()!!)
+            ordersRepository.updateFcmDeviceToken(
+                PreferencesRepository.getDeviceID(),
+                PreferencesRepository.getFcmRegToken()!!,
+                PreferencesRepository.getIdToken()!!
+            )
         }
 
     }
 
-    fun deleteFcmDeviceTokenOnLogOut(deviceId: String, idToken : String){
+    fun deleteFcmDeviceTokenOnLogOut(deviceId: String, idToken: String) {
         viewModelScope.launch {
-            ordersRepository.deleteFcmDeviceTokenOnLogOut( deviceId, idToken )
+            ordersRepository.deleteFcmDeviceTokenOnLogOut(deviceId, idToken)
         }
     }
 }

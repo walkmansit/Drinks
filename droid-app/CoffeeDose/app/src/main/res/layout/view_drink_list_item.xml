@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    >
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
+
         <variable
             name="item"
             type="com.office14.coffeedose.domain.Coffee" />
-        
+
         <variable
             name="clickListener"
             type="com.office14.coffeedose.ui.CoffeeItemClickListener" />
@@ -15,42 +15,41 @@
     </data>
 
     <LinearLayout
-        android:orientation="vertical"
-        android:padding="@dimen/zero_padding"
-        android:layout_marginRight="@dimen/spacing_normal_16"
-        android:layout_marginLeft="@dimen/spacing_normal_16"
-        android:layout_marginBottom="@dimen/spacing_normal_16"
-        android:foreground="?android:attr/selectableItemBackground"
-        android:background="@drawable/bg_round_border_with_solid"
-        android:elevation="@dimen/spacing_tiny_4"
-        android:clickable="true"
-        android:onClick="@{() -> clickListener.onClick(item.id)}"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/spacing_normal_16"
+        android:layout_marginRight="@dimen/spacing_normal_16"
+        android:layout_marginBottom="@dimen/spacing_normal_16"
+        android:background="@drawable/bg_round_border_with_solid"
+        android:clickable="true"
+        android:elevation="@dimen/spacing_tiny_4"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:onClick="@{() -> clickListener.onClick(item.id)}"
+        android:orientation="vertical"
+        android:padding="@dimen/zero_padding">
 
         <!---->
-
 
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/drinkName"
             style="@style/Base.TextView"
-            android:fontFamily="sans-serif-light"
-            android:textSize="@dimen/font_large_20"
-            android:layout_gravity="center_horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
             android:layout_margin="@dimen/spacing_normal_16"
+            android:fontFamily="sans-serif-light"
+            android:gravity="start"
             android:text="@{item.name}"
-            android:gravity="left" />
+            android:textSize="@dimen/font_large_20" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/drinkPhoto"
-            android:padding="@dimen/zero_padding"
             style="@style/Base.TextView"
-            app:imageUrl="@{item.photoUrl}"
             android:layout_width="match_parent"
-            android:layout_height="240dp" />
+            android:layout_height="240dp"
+            android:padding="@dimen/zero_padding"
+            app:imageUrl="@{item.photoUrl}" />
 
         <!---->
 
@@ -58,11 +57,11 @@
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/drinkDescription"
             style="@style/Base.TextView"
-            android:fontFamily="sans-serif-light"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/spacing_normal_16"
-            android:text="@{item.description}"
-            android:gravity="left" />
+            android:fontFamily="sans-serif-light"
+            android:gravity="start"
+            android:text="@{item.description}" />
     </LinearLayout>
 </layout>

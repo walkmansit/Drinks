@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<inset xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<inset xmlns:android="http://schemas.android.com/apk/res/android">
     android:insetRight="-1dp">
     <shape>
         <stroke
             android:width="1dip"
             android:color="@color/color_primary_dark" />
         <corners
-            android:bottomRightRadius="0dp"
             android:bottomLeftRadius="3dp"
+            android:bottomRightRadius="0dp"
             android:topLeftRadius="3dp"
-            android:topRightRadius="0dp"/>
+            android:topRightRadius="0dp" />
         <solid android:color="@color/color_primary"></solid>
         <!--<padding
             android:bottom="5.0dip"

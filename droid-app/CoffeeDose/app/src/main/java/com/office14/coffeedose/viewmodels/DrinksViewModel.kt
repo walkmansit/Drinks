@@ -1,24 +1,28 @@
 package com.office14.coffeedose.viewmodels
 
 import android.app.Application
-import androidx.lifecycle.*
-import com.office14.coffeedose.database.CoffeeDatabase
-import com.office14.coffeedose.di.AssistedSavedStateViewModelFactory
-import com.office14.coffeedose.domain.Coffee
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.office14.coffeedose.extensions.mutableLiveData
 import com.office14.coffeedose.network.HttpExceptionEx
 import com.office14.coffeedose.repository.CoffeeRepository
-import com.office14.coffeedose.repository.OrderDetailsRepository
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
+import com.office14.coffeedose.repository.PreferencesRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import java.lang.Exception
 import javax.inject.Inject
 
-class DrinksViewModel @Inject constructor(application:Application, private val coffeeRepository : CoffeeRepository) : AndroidViewModel(application) {
+class DrinksViewModel @Inject constructor(
+    application: Application,
+    private val coffeeRepository: CoffeeRepository
+) : AndroidViewModel(application) {
+
+    private val prefRepository = PreferencesRepository
+
+    private val appTheme = MutableLiveData<Int>()
 
     private val notDefinedId = -1
 
@@ -35,20 +39,21 @@ class DrinksViewModel @Inject constructor(application:Application, private val c
     private val _selectedId = mutableLiveData(notDefinedId)
     private val _navigatingOrders = MutableLiveData<Boolean>()
 
-    val navigatingOrders : LiveData<Boolean>
+    val navigatingOrders: LiveData<Boolean>
         get() = _navigatingOrders
 
     val selectedId: LiveData<Int>
         get() = _selectedId
 
     fun getDrinkName(): String {
-        val coffee = drinks.value?.firstOrNull{ coffee -> coffee.id == _selectedId.value }
+        val coffee = drinks.value?.firstOrNull { coffee -> coffee.id == _selectedId.value }
         return coffee?.name ?: "Not defined"
     }
 
 
     init {
         refreshData()
+        appTheme.value = prefRepository.getAppTheme()
     }
 
     override fun onCleared() {
@@ -87,7 +92,18 @@ class DrinksViewModel @Inject constructor(application:Application, private val c
         _selectedId.value = id
     }
 
-    fun navigateOrders(){
+    fun navigateOrders() {
         _navigatingOrders.value = true
+    }
+
+    fun getTheme() : LiveData<Int> = appTheme
+
+    fun switchTheme() {
+        if (appTheme.value == AppCompatDelegate.MODE_NIGHT_YES)
+            appTheme.value = AppCompatDelegate.MODE_NIGHT_NO
+        else
+            appTheme.value = AppCompatDelegate.MODE_NIGHT_YES
+
+        prefRepository.saveAppTheme(appTheme.value!!)
     }
 }

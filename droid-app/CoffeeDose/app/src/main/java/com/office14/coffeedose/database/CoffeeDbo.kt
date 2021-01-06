@@ -16,12 +16,12 @@ data class CoffeeDbo(
     var description: String,
 
     @ColumnInfo(name = "smallest_size_price")
-    val smallestSizePrice:Int,
+    val smallestSizePrice: Int,
 
     @ColumnInfo(name = "photo_url")
-    var photoUrl:String
-){
+    var photoUrl: String
+) {
     fun toDomainModel() = Coffee(
-        id,name,description,smallestSizePrice,photoUrl
+        id, name, description, smallestSizePrice, photoUrl
     )
 }

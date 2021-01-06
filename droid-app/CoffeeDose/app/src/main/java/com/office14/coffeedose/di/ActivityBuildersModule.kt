@@ -1,8 +1,8 @@
 package com.office14.coffeedose.di
 
 import com.office14.coffeedose.di.catalog.*
-import com.office14.coffeedose.di.orders.OrdersVMModule
 import com.office14.coffeedose.di.orders.OrdersScope
+import com.office14.coffeedose.di.orders.OrdersVMModule
 import com.office14.coffeedose.di.ordersawaiting.OrderAwaitingModule
 import com.office14.coffeedose.di.ordersawaiting.OrdersAwaitingScope
 import com.office14.coffeedose.ui.*
@@ -13,7 +13,7 @@ import dagger.android.ContributesAndroidInjector
 abstract class ActivityBuildersModule {
 
     @ContributesAndroidInjector(modules = [ActivityVMModule::class, ActivityBuildersSubModule::class])
-    abstract fun contributeCoffeeDoseActivity() : CoffeeDoseActivity
+    abstract fun contributeCoffeeDoseActivity(): CoffeeDoseActivity
 
 }
 

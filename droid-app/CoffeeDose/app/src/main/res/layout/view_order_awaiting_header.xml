@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
+
         <variable
             name="item"
             type="com.office14.coffeedose.domain.OrderInfo" />
@@ -12,69 +12,69 @@
 
     <LinearLayout
 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingLeft="@dimen/spacing_normal_16"
-        android:paddingRight="@dimen/spacing_normal_16"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:paddingRight="@dimen/spacing_normal_16">
 
         <LinearLayout
-            android:orientation="horizontal"
-            android:paddingTop="@dimen/spacing_normal_16"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="@dimen/spacing_normal_16">
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tv_status_title"
                 style="@style/Base.EditText"
-                android:text="@string/OrderInfoStatusTitle"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:text="@string/OrderInfoStatusTitle" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tv_status_value"
-                android:layout_marginLeft="4dp"
                 style="@style/Base.EditText"
-                android:text="@{item.orderStatusHumanized}"
-                app:orderStatusTextColor="@{item.orderStatus}"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_tiny_4"
+                android:text="@{item.orderStatusHumanized}"
+                app:orderStatusTextColor="@{item.orderStatus}" />
 
         </LinearLayout>
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_number_value"
             style="@style/Base.EditText"
-            android:text="@{@string/OrderInfoOrderNumberFormat(item.orderNumber)}"
-            android:paddingTop="@dimen/spacing_small_8"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/spacing_small_8"
+            android:text="@{@string/OrderInfoOrderNumberFormat(item.orderNumber)}" />
 
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_price_value"
             style="@style/Base.EditText"
-            android:text="@{@string/OrderInfoPriceFormat(item.totalPrice)}"
-            android:paddingTop="@dimen/spacing_small_8"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/spacing_small_8"
+            android:text="@{@string/OrderInfoPriceFormat(item.totalPrice)}" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_comment_title"
             style="@style/Base.EditText"
-            android:text="@{@string/OrderInfoCommentFormat(item.actualComment)}"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:text="@{@string/OrderInfoCommentFormat(item.actualComment)}" />
 
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_details_header"
+            style="@style/Base.EditText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:paddingTop="@dimen/spacing_normal_16"
             android:paddingBottom="@dimen/spacing_small_8"
-            style="@style/Base.EditText"
-            android:text="@string/OrderInfoStatusDetailsHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:text="@string/OrderInfoStatusDetailsHeader" />
 
     </LinearLayout>
 </layout>

@@ -1,8 +1,6 @@
 package com.office14.coffeedose.di
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import dagger.Binds
 import dagger.Module
 import dagger.multibindings.Multibinds
 

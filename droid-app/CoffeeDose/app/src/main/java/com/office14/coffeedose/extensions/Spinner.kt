@@ -28,7 +28,12 @@ fun Spinner.setSpinnerItemSelectedListener(listener: ItemSelectedListener?) {
         null
     } else {
         object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View,
+                position: Int,
+                id: Long
+            ) {
                 /*if (tag != position) {
                     listener.onItemSelected(parent.getItemAtPosition(position))
                 }*/
@@ -44,7 +49,7 @@ fun Spinner.setSpinnerItemSelectedListener(listener: ItemSelectedListener?) {
  * set spinner value
  */
 fun Spinner.setSpinnerValue(value: Any?) {
-    if (adapter != null ) {
+    if (adapter != null) {
         val position = (adapter as ArrayAdapter<Any>).getPosition(value)
         setSelection(position, false)
         tag = position
