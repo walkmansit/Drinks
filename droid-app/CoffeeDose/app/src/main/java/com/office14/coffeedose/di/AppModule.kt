@@ -22,7 +22,7 @@ import javax.inject.Singleton
 abstract class AppModule {
 
     @Singleton
-    @Module
+    //@Module
     companion object {
 
         /*@Singleton
@@ -44,7 +44,7 @@ abstract class AppModule {
 
         @Singleton
         @Provides
-        fun provideMoshi() = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+        fun provideMoshi(): Moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
 
         @Singleton
         @Provides
@@ -58,7 +58,7 @@ abstract class AppModule {
 
         @Singleton
         @Provides
-        fun provideApiService(retrofit: Retrofit) = retrofit.create(CoffeeApiService::class.java)
+        fun provideApiService(retrofit: Retrofit): CoffeeApiService = retrofit.create(CoffeeApiService::class.java)
 
         @Singleton
         @Provides
