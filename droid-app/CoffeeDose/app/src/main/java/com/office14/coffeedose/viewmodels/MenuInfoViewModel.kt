@@ -14,6 +14,8 @@ import com.office14.coffeedose.repository.PreferencesRepository
 import com.office14.coffeedose.repository.PreferencesRepository.EMPTY_STRING
 import com.office14.coffeedose.repository.UsersRepository
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.flow.asFlow
 import javax.inject.Inject
 
 class MenuInfoViewModel @Inject constructor(
@@ -28,16 +30,19 @@ class MenuInfoViewModel @Inject constructor(
     private val pollingJob = Job()
     private val pollingScope = CoroutineScope(pollingJob + Dispatchers.Main)
 
-    val email = mutableLiveData(EMPTY_STRING)
+    var email = PreferencesRepository.getUserEmail()!!
+    private val emailChannel = ConflatedBroadcastChannel<String>()
+    private val emailFlow = emailChannel.asFlow()
+
     private var app: Application = application
 
-    val orderDetailsCount = orderDetailsRepository.unAttachedOrderDetailsCount(email)
-    private val unattachedOrderDetails = orderDetailsRepository.unAttachedOrderDetails(email)
+    val orderDetailsCount = orderDetailsRepository.unAttachedOrderDetailsCount(emailFlow).asLiveData()
+    private val unattachedOrderDetails = orderDetailsRepository.unAttachedOrderDetails(emailFlow).asLiveData()
 
     private var isPolling = false
 
     val order: LiveData<Order> =
-        Transformations.map(ordersRepository.getCurrentQueueOrderByUser(email)) {
+        Transformations.map(ordersRepository.getCurrentQueueOrderByUser(emailFlow).asLiveData()) {
             if (it != null) {
                 if (!isPolling)
                     longPollingOrderStatus()
@@ -48,10 +53,13 @@ class MenuInfoViewModel @Inject constructor(
         }
 
     init {
+        //if (email != EMPTY_STRING)
+            emailChannel.offer(email)
+
         refreshOrderDetailsByUser()
     }
 
-    val currentOrderBadgeColor = Transformations.map(ordersRepository.queueOrderStatus(email)) {
+    val currentOrderBadgeColor = Transformations.map(ordersRepository.queueOrderStatus(emailFlow).asLiveData()) {
         return@map when (it) {
             OrderStatus.READY -> ContextCompat.getColor(app, R.color.color_green)
             OrderStatus.COOKING -> ContextCompat.getColor(app, R.color.color_yellow)
@@ -66,32 +74,32 @@ class MenuInfoViewModel @Inject constructor(
 
         cancelJob()
 
-        val oldEmail = email.value
-        email.value = PreferencesRepository.getUserEmail()!!
+        val oldEmail = email
+        email = PreferencesRepository.getUserEmail()!!
 
         viewModelScope.launch {
 
-            if (email.value != EMPTY_STRING) {
+            if (email != EMPTY_STRING) {
 
-                user = usersRepository.getUserByEmail(email.value!!)
+                user = usersRepository.getUserByEmail(email!!)
 
                 ordersRepository.getLastOrderForUserAndPutIntoDB(
                     PreferencesRepository.getIdToken(),
-                    email.value!!
+                    email!!
                 )
 
                 if (oldEmail == EMPTY_STRING) {
                     val unattachedDetailsForUser =
-                        orderDetailsRepository.unattachedOrderDetailsForUser(email.value!!)
+                        orderDetailsRepository.unattachedOrderDetailsForUser(email!!)
 
                     val unattachedDetailsFree =
                         orderDetailsRepository.unattachedOrderDetailsWithoutUser()
 
                     if (unattachedDetailsFree.isNotEmpty()) {
                         if (unattachedDetailsForUser.isNotEmpty())
-                            orderDetailsRepository.deleteOrderDetailsByEmail(email.value!!)
+                            orderDetailsRepository.deleteOrderDetailsByEmail(email!!)
 
-                        orderDetailsRepository.updateUnattachedOrderDetailsWithEmail(email.value!!)
+                        orderDetailsRepository.updateUnattachedOrderDetailsWithEmail(email!!)
                     }
                 }
             } else {
@@ -99,7 +107,7 @@ class MenuInfoViewModel @Inject constructor(
             }
         }
 
-        if (email.value != EMPTY_STRING)
+        if (email != EMPTY_STRING)
             restartLongPolling()
     }
 
@@ -121,7 +129,7 @@ class MenuInfoViewModel @Inject constructor(
             while (isActive) {
                 ordersRepository.refreshLastOrderStatus(
                     PreferencesRepository.getIdToken(),
-                    email.value!!
+                    email!!
                 )
             }
         }

@@ -10,6 +10,8 @@ import com.office14.coffeedose.repository.OrdersRepository
 import com.office14.coffeedose.repository.PreferencesRepository
 import com.office14.coffeedose.repository.PreferencesRepository.EMPTY_STRING
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.flow.asFlow
 import javax.inject.Inject
 
 class OrderDetailsViewModel @Inject constructor(
@@ -20,7 +22,9 @@ class OrderDetailsViewModel @Inject constructor(
     private val viewModelJob = Job()
     private val viewModelScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
-    private val email = mutableLiveData(EMPTY_STRING)
+    val email = PreferencesRepository.getUserEmail()!!
+    private val emailChannel = ConflatedBroadcastChannel<String>()
+    private val emailFlow = emailChannel.asFlow()
 
     private val _navigateOrderAwaiting = MutableLiveData<Boolean>()
     val navigateOrderAwaiting: LiveData<Boolean>
@@ -30,7 +34,7 @@ class OrderDetailsViewModel @Inject constructor(
     val forceLongPolling: LiveData<Boolean>
         get() = _forceLongPolling
 
-    val unAttachedOrders = orderDetailsRepository.unAttachedOrderDetails(email)
+    val unAttachedOrders = orderDetailsRepository.unAttachedOrderDetails(emailFlow).asLiveData()
 
     var comment: String? = null
 
@@ -46,12 +50,13 @@ class OrderDetailsViewModel @Inject constructor(
         return@map it.isEmpty()
     }
 
-    val hasOrderInQueue = Transformations.map(ordersRepository.getCurrentQueueOrderByUser(email)) {
+    val hasOrderInQueue = Transformations.map(ordersRepository.getCurrentQueueOrderByUser(emailFlow).asLiveData()) {
         return@map it != null
     }
 
     init {
-        email.value = PreferencesRepository.getUserEmail()
+        //if (email != EMPTY_STRING)
+            emailChannel.offer(email)
     }
 
     fun deleteOrderDetailsItem(item: OrderDetailFull) {
@@ -60,14 +65,14 @@ class OrderDetailsViewModel @Inject constructor(
         }
     }
 
-    fun confirmOrder(): Boolean {
-        email.value = PreferencesRepository.getUserEmail()
+    fun confirmOrder() {
+
 
         viewModelScope.launch {
             try {
 
-                if (email.value != EMPTY_STRING) {
-                    val order = ordersRepository.getCurrentNotFinishedOrderByUser(email.value!!)
+                if (email != EMPTY_STRING) {
+                    val order = ordersRepository.getCurrentNotFinishedOrderByUser(email!!)
                     if (order != null) {
                         _errorMessage.value = "Сначала закончите текущий заказ"
                         return@launch
@@ -75,17 +80,17 @@ class OrderDetailsViewModel @Inject constructor(
                 }
 
                 val ordersForAdd =
-                    orderDetailsRepository.unAttachedOrderDetailsStraight(email.value!!)
 
+                orderDetailsRepository.unAttachedOrderDetailsStraight(email)
                 val newOrderId = ordersRepository.createOrder(
                     ordersForAdd,
                     comment,
                     PreferencesRepository.getIdToken(),
-                    email.value!!
+                    email
                 )
 
                 orderDetailsRepository.updateAttachedOrderDetailsWithOrderId(
-                    email.value!!,
+                    email,
                     newOrderId
                 )
 
@@ -103,7 +108,7 @@ class OrderDetailsViewModel @Inject constructor(
                     _errorMessage.value = "Ошибка получения данных"*/
             }
         }
-        return true
+        //return true
     }
 
     fun doneLogin() {
@@ -111,7 +116,7 @@ class OrderDetailsViewModel @Inject constructor(
     }
 
     fun hideErrorMessage() {
-        _errorMessage.value = null
+        _errorMessage.value = ""
     }
 
     override fun onCleared() {
@@ -121,10 +126,10 @@ class OrderDetailsViewModel @Inject constructor(
 
     fun clearOrderDetails() {
         viewModelScope.launch {
-            if (email.value == EMPTY_STRING)
+            if (email == EMPTY_STRING)
                 orderDetailsRepository.deleteUnAttached()
             else
-                orderDetailsRepository.deleteOrderDetailsByEmail(email.value!!)
+                orderDetailsRepository.deleteOrderDetailsByEmail(email!!)
         }
     }
 

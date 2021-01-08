@@ -9,7 +9,13 @@ import com.office14.coffeedose.extensions.mutableLiveData
 import com.office14.coffeedose.repository.OrderDetailsRepository
 import com.office14.coffeedose.repository.OrdersRepository
 import com.office14.coffeedose.repository.PreferencesRepository
+import com.office14.coffeedose.repository.PreferencesRepository.EMPTY_STRING
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.switchMap
+import kotlinx.coroutines.flow.transform
 import javax.inject.Inject
 
 class OrderAwaitingViewModel @Inject constructor(
@@ -20,20 +26,21 @@ class OrderAwaitingViewModel @Inject constructor(
 
 
     private var orderId = mutableLiveData(-1)
-    private val email = mutableLiveData(PreferencesRepository.EMPTY_STRING)
 
-    val queueOrderStatus = ordersRepository.queueOrderStatus(email)
+    private val emailChannel = ConflatedBroadcastChannel<String>()
+
+    val queueOrderStatus = ordersRepository.queueOrderStatus(emailChannel.asFlow()).asLiveData()
 
     var orderInfo = mutableLiveData<OrderInfo>(null)
 
-    val order: LiveData<Order> =
-        Transformations.map(ordersRepository.getCurrentQueueOrderByUser(email)) {
+    val order: LiveData<Order?> = ordersRepository.getCurrentQueueOrderByUser(emailChannel.asFlow()).asLiveData()
+        /*Transformations.map(ordersRepository.getCurrentQueueOrderByUser(email)) {
             if (it != null) {
                 return@map it
             }
             return@map null
 
-        }
+        }*/
 
 
     private val _isLoading = MutableLiveData<Boolean>(true)
@@ -50,7 +57,10 @@ class OrderAwaitingViewModel @Inject constructor(
     private val viewModelScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
     init {
-        email.value = PreferencesRepository.getUserEmail()
+        val email = PreferencesRepository.getUserEmail()!!
+        //if(email != EMPTY_STRING)
+            emailChannel.offer(email)
+
         getOrderInfo()
     }
 
@@ -99,7 +109,7 @@ class OrderAwaitingViewModel @Inject constructor(
         //PreferencesRepository.saveLastOrderId(-1)
         //PreferencesRepository.saveNavigateToOrderAwaitFrag(false)
         viewModelScope.launch {
-            ordersRepository.markAsFinishedForUser(email.value!!)
+            ordersRepository.markAsFinishedForUser(emailChannel.value)
         }
         _navigateToCoffeeList.value = true
     }

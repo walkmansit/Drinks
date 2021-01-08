@@ -1,7 +1,7 @@
 package com.office14.coffeedose.database
 
-import androidx.lifecycle.LiveData
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 
 @Dao
@@ -9,7 +9,7 @@ interface CoffeeDao {
 
     /* Drinks  */
     @Query("select * from drinks")
-    fun getAllDrinks(): LiveData<List<CoffeeDbo>>
+    fun getAllDrinks(): Flow<List<CoffeeDbo>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAllDrinks(vararg drinks: CoffeeDbo)

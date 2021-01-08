@@ -1,9 +1,6 @@
 package com.office14.coffeedose.repository
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.Transformations
 import com.office14.coffeedose.database.OrderDetailDao
 import com.office14.coffeedose.database.OrderDetailDbo
 import com.office14.coffeedose.database.OrderDetailsContainer
@@ -11,16 +8,20 @@ import com.office14.coffeedose.domain.OrderDetail
 import com.office14.coffeedose.domain.OrderDetailFull
 import com.office14.coffeedose.repository.PreferencesRepository.EMPTY_STRING
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
 
 class OrderDetailsRepository(private val orderDetailsDao: OrderDetailDao) {
 
-    val unAttachedOrderDetails =
+   /* val unAttachedOrderDetails =
         Transformations.map(orderDetailsDao.getUnAttachedDetails()) { itDbo ->
             itDbo.map { it.toDomainModel() }
-        }
+        }*/
 
-    suspend fun unattachedOrderDetailsForUser(email: String): List<OrderDetailFull> {
+    suspend fun unattachedOrderDetailsForUser(email: String) = orderDetailsDao.getUnAttachedDetailsForUserStraight(email).map { it.toDomainModel() }
+
+            /*List<OrderDetailFull> {
         val result: MutableList<OrderDetailFull> = mutableListOf()
 
         withContext(Dispatchers.IO) {
@@ -30,7 +31,7 @@ class OrderDetailsRepository(private val orderDetailsDao: OrderDetailDao) {
             }
         }
         return result
-    }
+    }*/
 
     suspend fun unattachedOrderDetailsWithoutUser(): List<OrderDetailFull> {
         val result: MutableList<OrderDetailFull> = mutableListOf()
@@ -45,12 +46,16 @@ class OrderDetailsRepository(private val orderDetailsDao: OrderDetailDao) {
     }
 
 
-    fun getOrderDetailsByOrderId(orderId: Int) =
+   /* fun getOrderDetailsByOrderId(orderId: Int) =
         Transformations.map(orderDetailsDao.getDetailsByOrderId(orderId)) { itDbo ->
             itDbo.map { it.toDomainModel() }
-        }
+        }*/
 
-    fun unAttachedOrderDetails(email: LiveData<String>): LiveData<List<OrderDetailFull>> {
+    fun unAttachedOrderDetails(emailFlow: Flow<String>): Flow<List<OrderDetailFull>> =  orderDetailsDao.getUnAttachedDetails().combine(emailFlow) {
+        orders, email -> orders.filter { it.orderDetail.owner == if (email == EMPTY_STRING ) null else email }.map { it.toDomainModel() }
+    }
+
+    /*{
         val result = MediatorLiveData<List<OrderDetailFull>>()
         val uod = orderDetailsDao.getUnAttachedDetails()
 
@@ -69,7 +74,7 @@ class OrderDetailsRepository(private val orderDetailsDao: OrderDetailDao) {
 
 
         return result
-    }
+    }*/
 
     suspend fun unAttachedOrderDetailsStraight(email: String): List<OrderDetailFull> {
 
@@ -86,7 +91,11 @@ class OrderDetailsRepository(private val orderDetailsDao: OrderDetailDao) {
     }
 
 
-    fun unAttachedOrderDetailsCount(email: LiveData<String>): LiveData<Int> {
+    fun unAttachedOrderDetailsCount(emailFlow: Flow<String>): Flow<Int> = orderDetailsDao.getUnAttachedDetails().combine(emailFlow) {
+            orders, email -> orders.filter { it.orderDetail.owner == if (email == EMPTY_STRING ) null else email }.sumBy { it.orderDetail.count }
+    }
+
+    /*{
         val result = MediatorLiveData<Int>()
         val uod = orderDetailsDao.getUnAttachedDetails()
 
@@ -106,7 +115,7 @@ class OrderDetailsRepository(private val orderDetailsDao: OrderDetailDao) {
 
 
         return result
-    }
+    }*/
 
     suspend fun delete(oderDetails: OrderDetail) {
         try {

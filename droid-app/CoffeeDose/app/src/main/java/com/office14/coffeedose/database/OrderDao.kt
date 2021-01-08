@@ -1,31 +1,31 @@
 package com.office14.coffeedose.database
 
-import androidx.lifecycle.LiveData
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface OrderDao {
 
     @Query("select * from orders")
-    fun getAll(): LiveData<List<OrderDbo>>
+    fun getAll(): Flow<List<OrderDbo>>
 
     @Query("select * from orders where finished = 'false'")
-    fun getAllNotFinished(): LiveData<List<OrderDbo>>
+    fun getAllNotFinished(): Flow<List<OrderDbo>>
 
     @Query("select * from orders where owner = :email")
-    fun getAllForUser(email: String): LiveData<List<OrderDbo>>
+    fun getAllForUser(email: String): Flow<List<OrderDbo>>
 
     @Query("select * from orders where owner = :email and finished = 'false'")
     fun getAllForUserNotFinishedStraight(email: String): List<OrderDbo>
 
     @Query("select * from orders where id = :orderId")
-    fun getById(orderId: Int): LiveData<List<OrderDbo>>
+    fun getById(orderId: Int): Flow<List<OrderDbo>>
 
     @Query("select * from orders where id = :orderId")
     fun getByIdStraight(orderId: Int): List<OrderDbo>
 
     @Query("select * from orders where id = :orderId and owner = :email")
-    fun getByIdAndOwner(orderId: Int, email: String): LiveData<List<OrderDbo>>
+    fun getByIdAndOwner(orderId: Int, email: String): Flow<List<OrderDbo>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAllOrders(vararg orders: OrderDbo)

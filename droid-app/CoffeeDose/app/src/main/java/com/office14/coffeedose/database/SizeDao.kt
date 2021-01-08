@@ -1,13 +1,14 @@
 package com.office14.coffeedose.database
 
-import androidx.lifecycle.LiveData
+
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SizeDao {
 
     @Query("select * from drink_size where drink_id = :id")
-    fun getSizesByDrinkId(id: Int): LiveData<List<SizeDbo>>
+    fun getSizesByDrinkId(id: Int): Flow<List<SizeDbo>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAllSizes(vararg sizes: SizeDbo)

@@ -2,11 +2,12 @@ package com.office14.coffeedose.database
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AddinDao {
     @Query("select * from add_ins")
-    fun getAllAddins(): LiveData<List<AddinDbo>>
+    fun getAllAddins(): Flow<List<AddinDbo>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAllAddins(vararg videos: AddinDbo)

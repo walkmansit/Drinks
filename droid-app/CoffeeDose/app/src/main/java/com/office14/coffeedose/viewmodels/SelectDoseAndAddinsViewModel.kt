@@ -30,9 +30,9 @@ class SelectDoseAndAddinsViewModel @AssistedInject constructor(
 ) : AndroidViewModel(application) {
 
 
-    var sizes = sizesRepository.getSizes(savedStateHandle.get<Int>("drinkId") ?: -1)
+    var sizes = sizesRepository.getSizes(savedStateHandle.get<Int>("drinkId") ?: -1).asLiveData()
 
-    val addins = addinsRepository.addins
+    val addins = addinsRepository.addins.asLiveData()
 
     private val drinkId: Int = savedStateHandle.get<Int>("drinkId") ?: -1
 

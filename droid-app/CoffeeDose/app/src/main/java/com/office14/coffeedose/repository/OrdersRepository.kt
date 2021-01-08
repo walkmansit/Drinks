@@ -10,8 +10,10 @@ import com.office14.coffeedose.domain.OrderDetailFull
 import com.office14.coffeedose.domain.OrderInfo
 import com.office14.coffeedose.domain.OrderStatus
 import com.office14.coffeedose.network.*
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,40 +24,35 @@ class OrdersRepository @Inject constructor(
     private val coffeeApi: CoffeeApiService
 ) {
 
-    private val allOrders = ordersDao.getAll()
+    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 
-    fun getCurrentQueueOrderNormal(): Order? {
-        val list = ordersDao.getAll().value
+    private val allOrders : Flow<List<Order>> = ordersDao.getAll().map { it.map { orderDbo ->  orderDbo.toDomainModel() } }
+
+    suspend fun getCurrentQueueOrderNormal(): Order? {
+        val list = ordersDao.getAll().first()
         if (list.isNullOrEmpty()) return null
         return list[0].toDomainModel()
     }
 
-    fun getOrderById(orderId: Int) = Transformations.map(ordersDao.getById(orderId)) { itDbo ->
+    /*fun getOrderById(orderId: Int) = Transformations.map(ordersDao.getById(orderId)) { itDbo ->
         itDbo.map { it.toDomainModel() }
-    }
+    }*/
 
-    fun getCurrentQueueOrder(): LiveData<Order> = Transformations.map(ordersDao.getAll()) { itDbo ->
+    /*fun getCurrentQueueOrder(): LiveData<Order> = Transformations.map(ordersDao.getAll()) { itDbo ->
         if (itDbo.size == 1) {
             return@map itDbo[0].toDomainModel()
         }
         return@map null
-    }
+    }*/
 
-    fun getCurrentQueueOrderByUser(email: LiveData<String>): LiveData<Order> {
-
-        val result = MediatorLiveData<Order>()
-        val allOrders = ordersDao.getAllNotFinished()
-
-        val update = {
-            val list = allOrders?.value?.filter { it.owner == email.value!! } ?: listOf()
-            result.value = if (list.size == 1) list[0].toDomainModel() else null
+    fun getCurrentQueueOrderByUser(emailFlow: Flow<String>): Flow<Order?> = ordersDao.getAllNotFinished().combine(emailFlow) { orders, email ->
+        orders.firstOrNull { it.owner == email }?.toDomainModel()
+        }.flowOn(defaultDispatcher).conflate()
+    /*{
+        return ordersDao.getAllNotFinished().combine(emailFlow) { orders, email ->
+            orders.filter { it.owner == email }.firstOrNull()?.map { it.toDomainModel() }
         }
-
-        result.addSource(email) { update.invoke() }
-        result.addSource(allOrders) { update.invoke() }
-
-        return result
-    }
+    }*/
 
     suspend fun getCurrentNotFinishedOrderByUser(email: String): Order? {
 
@@ -73,7 +70,12 @@ class OrdersRepository @Inject constructor(
     }
 
 
-    fun queueOrderStatus(email: LiveData<String>): LiveData<OrderStatus> {
+    fun queueOrderStatus(emailFlow: Flow<String>): Flow<OrderStatus> = ordersDao.getAllNotFinished().combine(emailFlow) { orders, email ->
+        OrderStatus.getStatusByString(orders.firstOrNull { it.owner == email }?.statusCode ?: "unknown")
+    }.flowOn(defaultDispatcher).conflate()
+
+
+   /* {
 
         val result = MediatorLiveData<OrderStatus>()
         val allOrdersInQueue = ordersDao.getAllNotFinished()
@@ -92,7 +94,7 @@ class OrdersRepository @Inject constructor(
 
         return result
 
-    }
+    }*/
 
     private fun composeAuthHeader(token: String?) = "Bearer $token"
 

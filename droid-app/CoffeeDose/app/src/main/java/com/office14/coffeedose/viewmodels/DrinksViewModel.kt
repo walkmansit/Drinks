@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
 import com.office14.coffeedose.extensions.mutableLiveData
 import com.office14.coffeedose.network.HttpExceptionEx
 import com.office14.coffeedose.repository.CoffeeRepository
@@ -30,7 +31,7 @@ class DrinksViewModel @Inject constructor(
 
     private val viewModelScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
-    val drinks = coffeeRepository.drinks
+    val drinks = coffeeRepository.drinks.asLiveData()
 
     var isRefreshing = mutableLiveData(false)
 
@@ -45,11 +46,7 @@ class DrinksViewModel @Inject constructor(
     val selectedId: LiveData<Int>
         get() = _selectedId
 
-    fun getDrinkName(): String {
-        val coffee = drinks.value?.firstOrNull { coffee -> coffee.id == _selectedId.value }
-        return coffee?.name ?: "Not defined"
-    }
-
+    fun getDrinkName(): String  = drinks.value?.firstOrNull { coffee -> coffee.id == _selectedId.value }?.name ?: "Not defined"
 
     init {
         refreshData()

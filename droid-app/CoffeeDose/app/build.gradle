@@ -97,6 +97,8 @@ dependencies {
 
     // ViewModel and LiveData (arch components)
     implementation "androidx.lifecycle:lifecycle-extensions:$version_lifecycle_extensions"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$version_lifecycle_extensions"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$version_livedata_extensions"
 
     // Logging
     implementation "com.jakewharton.timber:timber:$version_timber"
@@ -106,7 +108,8 @@ dependencies {
 
     // Room database
     implementation "androidx.room:room-runtime:$version_room"
-    implementation "androidx.room:room-coroutines:2.1.0-alpha04"
+    //implementation "androidx.room:room-coroutines:2.1.0-alpha04"
+    implementation  "androidx.room:room-ktx:$version_room"
     kapt "androidx.room:room-compiler:$version_room"
 
     // Material

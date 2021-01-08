@@ -5,6 +5,7 @@ import com.office14.coffeedose.database.SizeDao
 import com.office14.coffeedose.network.CoffeeApiService
 import com.office14.coffeedose.network.HttpExceptionEx
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -13,9 +14,7 @@ class SizesRepository @Inject constructor(
     private val coffeeApi: CoffeeApiService
 ) {
 
-    fun getSizes(drinkId: Int) = Transformations.map(sizesDao.getSizesByDrinkId(drinkId)) { itDbo ->
-        itDbo.map { it.toDomainModel() }
-    }
+    fun getSizes(drinkId: Int) = sizesDao.getSizesByDrinkId(drinkId).map { it.map { sizeDbo ->  sizeDbo.toDomainModel() } }
 
 
     suspend fun refreshSizes(drinkId: Int) {
