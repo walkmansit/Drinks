@@ -1,49 +1,48 @@
 package com.office14.coffeedose.viewmodels
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.*
-import com.office14.coffeedose.domain.Order
-import com.office14.coffeedose.domain.OrderInfo
+import com.office14.coffeedose.domain.entity.Order
+import com.office14.coffeedose.domain.entity.OrderInfo
 import com.office14.coffeedose.extensions.mutableLiveData
-import com.office14.coffeedose.repository.OrderDetailsRepository
-import com.office14.coffeedose.repository.OrdersRepository
-import com.office14.coffeedose.repository.PreferencesRepository
-import com.office14.coffeedose.repository.PreferencesRepository.EMPTY_STRING
+import com.office14.coffeedose.plugins.PreferencesRepositoryImpl
+import com.office14.coffeedose.domain.exception.Failure
+import com.office14.coffeedose.domain.interactor.UseCaseBase
+import com.office14.coffeedose.domain.usecase.GetCurrentQueueOrderByUser
+import com.office14.coffeedose.domain.usecase.GetLastOrderInfo
+import com.office14.coffeedose.domain.usecase.MarkOrderAsFinishedForUser
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.switchMap
-import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
 
 class OrderAwaitingViewModel @Inject constructor(
     application: Application,
-    private val ordersRepository: OrdersRepository,
-    private val ordersDetailsRepository: OrderDetailsRepository
-) : AndroidViewModel(application) {
+    private val getCurrentQueueOrderByUser: GetCurrentQueueOrderByUser,
+    private val getLastOrderInfo: GetLastOrderInfo,
+    private val markOrderAsFinishedForUser: MarkOrderAsFinishedForUser
+    //private val ordersRepository: OrdersRepositoryImpl
+) : BaseViewModel(application) {
 
 
     private var orderId = mutableLiveData(-1)
+    private val email = PreferencesRepositoryImpl.getUserEmail()!!
 
     private val emailChannel = ConflatedBroadcastChannel<String>()
 
-    val queueOrderStatus = ordersRepository.queueOrderStatus(emailChannel.asFlow()).asLiveData()
+    private val _queueOrderStatus : MutableLiveData<String> = mutableLiveData()
+    val queueOrderStatus : LiveData<String> = _queueOrderStatus
+        //ordersRepository.queueOrderStatus(emailChannel.asFlow()).asLiveData()
 
-    var orderInfo = mutableLiveData<OrderInfo>(null)
+    private val _orderInfo = mutableLiveData<OrderInfo?>(null)
+    var orderInfo : LiveData<OrderInfo?> = _orderInfo
 
-    val order: LiveData<Order?> = ordersRepository.getCurrentQueueOrderByUser(emailChannel.asFlow()).asLiveData()
-        /*Transformations.map(ordersRepository.getCurrentQueueOrderByUser(email)) {
-            if (it != null) {
-                return@map it
-            }
-            return@map null
-
-        }*/
+    private val _order: MutableLiveData<Order?> = mutableLiveData()
+    val order: LiveData<Order?> =_order
 
 
-    private val _isLoading = MutableLiveData<Boolean>(true)
+    private val _isLoading = MutableLiveData(true)
     val isLoading: LiveData<Boolean>
         get() = _isLoading
 
@@ -57,11 +56,30 @@ class OrderAwaitingViewModel @Inject constructor(
     private val viewModelScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
     init {
-        val email = PreferencesRepository.getUserEmail()!!
+
+        getCurrentQueueOrderWithStatusByUser()
         //if(email != EMPTY_STRING)
             emailChannel.offer(email)
 
         getOrderInfo()
+    }
+
+    private fun getCurrentQueueOrderWithStatusByUser(){
+
+        fun noStatus(failure:Failure){
+            _queueOrderStatus.value = "unknown status"
+            _order.value = null
+        }
+        fun rightStatus(order: Order){
+            _queueOrderStatus.value = order.statusCode
+            _order.value = order
+        }
+
+        getCurrentQueueOrderByUser(GetCurrentQueueOrderByUser.Params(emailChannel.asFlow())){
+            it.mapLatest { either ->
+                either.fold(::noStatus,::rightStatus)
+            }
+        }
     }
 
     fun isRootVisible() : LiveData<Boolean> {
@@ -78,18 +96,19 @@ class OrderAwaitingViewModel @Inject constructor(
     }
 
     private fun getOrderInfo() {
-        try {
-            viewModelScope.launch {
-                orderInfo.value =
-                    ordersRepository.getLastOrderInfo(PreferencesRepository.getIdToken()!!)
-                _isLoading.value = false
-            }
-        } catch (ex: Exception) {
-            Log.d("OrderAwaitingViewModel.getOrderInfo", ex.message)
+        fun noInfo(failure:Failure){
+            _isLoading.value = false
+        }
+        fun rightInfo(info:OrderInfo){
+            _orderInfo.value = info
+            _isLoading.value = false
+        }
+        getLastOrderInfo(UseCaseBase.None()){
+            it.fold(::noInfo,::rightInfo)
         }
     }
 
-    private suspend fun getOrderId(): Int {
+    /*private suspend fun getOrderId(): Int {
         var result: Int
         withContext(Dispatchers.IO) {
             val order = ordersRepository.getCurrentQueueOrderNormal()
@@ -103,15 +122,19 @@ class OrderAwaitingViewModel @Inject constructor(
             val order = ordersRepository.getCurrentQueueOrderNormal()
             order?.let { orderId.value = it.id }
         }
-    }
+    }*/
 
     fun approve() {
-        //PreferencesRepository.saveLastOrderId(-1)
-        //PreferencesRepository.saveNavigateToOrderAwaitFrag(false)
-        viewModelScope.launch {
-            ordersRepository.markAsFinishedForUser(emailChannel.value)
+        fun left(failure:Failure){
+            //TODO show error
         }
-        _navigateToCoffeeList.value = true
+        fun right(none: UseCaseBase.None){
+            _navigateToCoffeeList.value = true
+        }
+
+        markOrderAsFinishedForUser(MarkOrderAsFinishedForUser.Params(email)){
+            it.fold(::left,::right)
+        }
     }
 
     override fun onCleared() {

@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
 import com.coffeedose.R
-import com.office14.coffeedose.domain.Coffee
+import com.office14.coffeedose.domain.entity.Coffee
 
 
 class CoffeeSpinnerAdapter(private val context: Context) : BaseAdapter() {

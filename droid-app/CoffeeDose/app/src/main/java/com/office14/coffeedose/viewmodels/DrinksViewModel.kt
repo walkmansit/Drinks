@@ -2,26 +2,31 @@ package com.office14.coffeedose.viewmodels
 
 import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.asLiveData
 import com.office14.coffeedose.extensions.mutableLiveData
-import com.office14.coffeedose.network.HttpExceptionEx
-import com.office14.coffeedose.repository.CoffeeRepository
-import com.office14.coffeedose.repository.PreferencesRepository
+import com.office14.coffeedose.plugins.PreferencesRepositoryImpl
+import com.office14.coffeedose.domain.entity.Coffee
+import com.office14.coffeedose.domain.exception.Failure
+import com.office14.coffeedose.domain.interactor.UseCaseBase
+import com.office14.coffeedose.domain.usecase.GetDrinks
+import com.office14.coffeedose.domain.usecase.RefreshDrinks
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
 
+@ExperimentalCoroutinesApi
 class DrinksViewModel @Inject constructor(
     application: Application,
-    private val coffeeRepository: CoffeeRepository
-) : AndroidViewModel(application) {
+    private val getDrinks : GetDrinks,
+    private val refreshDrinks : RefreshDrinks
+) : BaseViewModel(application) {
 
-    private val prefRepository = PreferencesRepository
+    private val prefRepository = PreferencesRepositoryImpl
 
     private val appTheme = MutableLiveData<Int>()
 
@@ -31,7 +36,8 @@ class DrinksViewModel @Inject constructor(
 
     private val viewModelScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
-    val drinks = coffeeRepository.drinks.asLiveData()
+    private val _drinks : MutableLiveData<List<Coffee>> = mutableLiveData()
+    val drinks : LiveData<List<Coffee>> = _drinks
 
     var isRefreshing = mutableLiveData(false)
 
@@ -48,7 +54,27 @@ class DrinksViewModel @Inject constructor(
 
     fun getDrinkName(): String  = drinks.value?.firstOrNull { coffee -> coffee.id == _selectedId.value }?.name ?: "Not defined"
 
+    @ExperimentalCoroutinesApi
+    private fun loadDrinks() {
+        getDrinks(UseCaseBase.None()){
+            it.mapLatest { either ->
+                either.fold(::handleFailure,::handleGetDrinks)
+            }
+            .launchIn(viewModelScope)
+        }
+    }
+
+    override fun handleFailure(failure: Failure){
+        super.handleFailure(failure)
+        isRefreshing.value = false
+    }
+
+    private fun handleGetDrinks(drinksInput : List<Coffee>){
+        _drinks.value = drinksInput
+    }
+
     init {
+        loadDrinks()
         refreshData()
         appTheme.value = prefRepository.getAppTheme()
     }
@@ -59,21 +85,9 @@ class DrinksViewModel @Inject constructor(
     }
 
     fun refreshData(showRefresh: Boolean = false) {
-        viewModelScope.launch {
-            try {
-
-                if (showRefresh) isRefreshing.value = true
-
-                coffeeRepository.refreshDrinks()
-
-                errorMessage.value = null
-            } catch (responseEx: HttpExceptionEx) {
-                errorMessage.value = responseEx.error.title
-            } catch (ex: Exception) {
-                errorMessage.value = ex.message
-            } finally {
-                if (showRefresh) isRefreshing.value = false
-            }
+        if (showRefresh) isRefreshing.value = true
+        refreshDrinks(UseCaseBase.None()){
+            it.fold(::handleFailure) { if (showRefresh) isRefreshing.value = false }
         }
     }
 
@@ -89,9 +103,9 @@ class DrinksViewModel @Inject constructor(
         _selectedId.value = id
     }
 
-    fun navigateOrders() {
+    /*fun navigateOrders() {
         _navigatingOrders.value = true
-    }
+    }*/
 
     fun getTheme() : LiveData<Int> = appTheme
 
@@ -103,4 +117,5 @@ class DrinksViewModel @Inject constructor(
 
         prefRepository.saveAppTheme(appTheme.value!!)
     }
+
 }

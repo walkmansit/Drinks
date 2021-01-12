@@ -5,7 +5,7 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
-import com.office14.coffeedose.domain.Coffee
+import com.office14.coffeedose.domain.entity.Coffee
 
 
 /**

@@ -6,7 +6,7 @@
 
         <variable
             name="item"
-            type="com.office14.coffeedose.domain.Coffee" />
+            type="com.office14.coffeedose.domain.entity.Coffee" />
 
         <variable
             name="clickListener"

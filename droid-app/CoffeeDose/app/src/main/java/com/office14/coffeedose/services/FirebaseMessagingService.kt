@@ -12,8 +12,7 @@ import androidx.core.app.NotificationCompat
 import com.coffeedose.R
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import com.office14.coffeedose.network.PostFcmDeviceTokenBody
-import com.office14.coffeedose.repository.PreferencesRepository
+import com.office14.coffeedose.plugins.PreferencesRepositoryImpl
 import com.office14.coffeedose.ui.CoffeeDoseActivity
 import kotlinx.coroutines.Dispatchers
 
@@ -108,9 +107,12 @@ class FirebaseMessagingService : FirebaseMessagingService() {
     private fun sendRegistrationToServer(token: String?) {
         // TODO: Implement this method to send token to your app server.
         token?.let {
-            PreferencesRepository.saveFcmRegToken(it)
+            PreferencesRepositoryImpl.saveFcmRegToken(it)
             with(Dispatchers.IO) {
-                val body = PostFcmDeviceTokenBody(PreferencesRepository.getDeviceID(), token)
+                val body = com.office14.coffeedose.data.network.PostFcmDeviceTokenBody(
+                    PreferencesRepositoryImpl.getDeviceID(),
+                    token
+                )
                 //coffeeApi.updateFcmDeviceToken(body,PreferencesRepository.getIdToken()!!)
             }
         }

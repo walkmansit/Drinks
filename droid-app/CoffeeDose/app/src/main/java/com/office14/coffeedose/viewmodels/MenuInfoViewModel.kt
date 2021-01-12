@@ -4,25 +4,26 @@ import android.app.Application
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
 import com.coffeedose.R
-import com.office14.coffeedose.domain.Order
-import com.office14.coffeedose.domain.OrderStatus
-import com.office14.coffeedose.domain.User
+import com.office14.coffeedose.domain.entity.Order
+import com.office14.coffeedose.domain.entity.OrderStatus
+import com.office14.coffeedose.domain.entity.User
+import com.office14.coffeedose.plugins.PreferencesRepositoryImpl
+import com.office14.coffeedose.domain.exception.Failure
+import com.office14.coffeedose.domain.usecase.GetCurrentQueueOrderByUser
 import com.office14.coffeedose.extensions.mutableLiveData
-import com.office14.coffeedose.repository.OrderDetailsRepository
-import com.office14.coffeedose.repository.OrdersRepository
-import com.office14.coffeedose.repository.PreferencesRepository
-import com.office14.coffeedose.repository.PreferencesRepository.EMPTY_STRING
-import com.office14.coffeedose.repository.UsersRepository
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
 
 class MenuInfoViewModel @Inject constructor(
-    application: Application, private val orderDetailsRepository: OrderDetailsRepository,
-    private val ordersRepository: OrdersRepository,
-    private val usersRepository: UsersRepository
-) : AndroidViewModel(application) {
+    application: Application,
+    private val getCurrentQueueOrderByUser:GetCurrentQueueOrderByUser,
+    //private val orderDetailsRepository: OrderDetailsRepositoryImpl,
+    //private val ordersRepository: OrdersRepositoryImpl,
+    //private val usersRepository: UsersRepositoryImpl
+) : BaseViewModel(application) {
 
     private val viewModelJob = Job()
     private val viewModelScope = CoroutineScope(viewModelJob + Dispatchers.Main)
@@ -30,19 +31,22 @@ class MenuInfoViewModel @Inject constructor(
     private val pollingJob = Job()
     private val pollingScope = CoroutineScope(pollingJob + Dispatchers.Main)
 
-    var email = PreferencesRepository.getUserEmail()!!
+    var email = PreferencesRepositoryImpl.getUserEmail()!!
     private val emailChannel = ConflatedBroadcastChannel<String>()
     private val emailFlow = emailChannel.asFlow()
 
     private var app: Application = application
 
-    val orderDetailsCount = orderDetailsRepository.unAttachedOrderDetailsCount(emailFlow).asLiveData()
-    private val unattachedOrderDetails = orderDetailsRepository.unAttachedOrderDetails(emailFlow).asLiveData()
+    val orderDetailsCount = mutableLiveData(1)
+    //val orderDetailsCount = orderDetailsRepository.unAttachedOrderDetailsCount(emailFlow).asLiveData()
+    //private val unattachedOrderDetails = orderDetailsRepository.unAttachedOrderDetails(emailFlow).asLiveData()
 
     private var isPolling = false
 
-    val order: LiveData<Order> =
-        Transformations.map(ordersRepository.getCurrentQueueOrderByUser(emailFlow).asLiveData()) {
+    private val _order: MutableLiveData<Order?> = mutableLiveData()
+
+    val order: LiveData<Order?> = _order
+       /* Transformations.map(ordersRepository.getCurrentQueueOrderByUser(emailFlow).asLiveData()) {
             if (it != null) {
                 if (!isPolling)
                     longPollingOrderStatus()
@@ -50,17 +54,18 @@ class MenuInfoViewModel @Inject constructor(
             }
             return@map null
 
-        }
+        }*/
 
     init {
+        getCurrentQueueOrderWithStatusByUser()
         //if (email != EMPTY_STRING)
             emailChannel.offer(email)
 
         refreshOrderDetailsByUser()
     }
 
-    val currentOrderBadgeColor = Transformations.map(ordersRepository.queueOrderStatus(emailFlow).asLiveData()) {
-        return@map when (it) {
+    val currentOrderBadgeColor = Transformations.map(_order) {
+        return@map when (it?.orderStatus) {
             OrderStatus.READY -> ContextCompat.getColor(app, R.color.color_green)
             OrderStatus.COOKING -> ContextCompat.getColor(app, R.color.color_yellow)
             OrderStatus.FAILED -> ContextCompat.getColor(app, R.color.color_red)
@@ -68,14 +73,31 @@ class MenuInfoViewModel @Inject constructor(
         }
     }
 
+    private fun getCurrentQueueOrderWithStatusByUser(){
+
+        fun left(failure: Failure){
+            _order.value = null
+        }
+        fun right(order: Order){
+            _order.value = order
+        }
+
+        getCurrentQueueOrderByUser(GetCurrentQueueOrderByUser.Params(emailChannel.asFlow())){
+            it.mapLatest { either ->
+                either.fold(::left,::right)
+            }
+        }
+    }
+
     var user: User? = null
 
     fun refreshOrderDetailsByUser() {
 
-        cancelJob()
+        //TODO
+        /*cancelJob()
 
         val oldEmail = email
-        email = PreferencesRepository.getUserEmail()!!
+        email = PreferencesRepositoryImpl.getUserEmail()!!
 
         viewModelScope.launch {
 
@@ -84,7 +106,7 @@ class MenuInfoViewModel @Inject constructor(
                 user = usersRepository.getUserByEmail(email!!)
 
                 ordersRepository.getLastOrderForUserAndPutIntoDB(
-                    PreferencesRepository.getIdToken(),
+                    PreferencesRepositoryImpl.getIdToken(),
                     email!!
                 )
 
@@ -108,7 +130,7 @@ class MenuInfoViewModel @Inject constructor(
         }
 
         if (email != EMPTY_STRING)
-            restartLongPolling()
+            restartLongPolling()*/
     }
 
     fun restartLongPolling() {
@@ -122,14 +144,14 @@ class MenuInfoViewModel @Inject constructor(
 
     private fun longPollingOrderStatus() {
 
-        isPolling = true
+        //TODO
+       /* isPolling = true
 
         _job = pollingScope.launch {
 
             while (isActive) {
                 ordersRepository.refreshLastOrderStatus(
-                    PreferencesRepository.getIdToken(),
-                    email!!
+                    PreferencesRepositoryImpl.getIdToken()
                 )
             }
         }
@@ -138,7 +160,7 @@ class MenuInfoViewModel @Inject constructor(
             if (it?.statusName?.toLowerCase() == "ready") {
                 cancelJob()
             }
-        }
+        }*/
     }
 
     private fun cancelJob() {
@@ -149,11 +171,12 @@ class MenuInfoViewModel @Inject constructor(
     }
 
     fun updateUser() {
-        viewModelScope.launch {
+        //TODO
+        /*viewModelScope.launch {
             user?.let {
                 usersRepository.updateUser(it)
             }
-        }
+        }*/
     }
 
     override fun onCleared() {
@@ -163,19 +186,21 @@ class MenuInfoViewModel @Inject constructor(
     }
 
     fun updateFcmDeviceToken() {
-        viewModelScope.launch {
+        //TODO
+      /*  viewModelScope.launch {
             ordersRepository.updateFcmDeviceToken(
-                PreferencesRepository.getDeviceID(),
-                PreferencesRepository.getFcmRegToken()!!,
-                PreferencesRepository.getIdToken()!!
+                PreferencesRepositoryImpl.getDeviceID(),
+                PreferencesRepositoryImpl.getFcmRegToken()!!,
+                PreferencesRepositoryImpl.getIdToken()!!
             )
-        }
+        }*/
 
     }
 
     fun deleteFcmDeviceTokenOnLogOut(deviceId: String, idToken: String) {
-        viewModelScope.launch {
+        //TODO
+       /* viewModelScope.launch {
             ordersRepository.deleteFcmDeviceTokenOnLogOut(deviceId, idToken)
-        }
+        }*/
     }
 }

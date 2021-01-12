@@ -1,9 +1,10 @@
 package com.office14.coffeedose.di
 
 import com.office14.coffeedose.di.catalog.*
+import com.office14.coffeedose.di.orders.OrdersModule
 import com.office14.coffeedose.di.orders.OrdersScope
 import com.office14.coffeedose.di.orders.OrdersVMModule
-import com.office14.coffeedose.di.ordersawaiting.OrderAwaitingModule
+import com.office14.coffeedose.di.ordersawaiting.OrderAwaitingVMModule
 import com.office14.coffeedose.di.ordersawaiting.OrdersAwaitingScope
 import com.office14.coffeedose.ui.*
 import dagger.Module
@@ -30,10 +31,10 @@ abstract class ActivityBuildersSubModule {
     abstract fun contributeSelectDoseAndAddinsFragment(): SelectDoseAndAddinsFragment
 
     @OrdersScope
-    @ContributesAndroidInjector(modules = [OrdersVMModule::class])
+    @ContributesAndroidInjector(modules = [OrdersVMModule::class, OrdersModule::class])
     abstract fun contributeOrderDetailsFragment(): OrderDetailsFragment
 
     @OrdersAwaitingScope
-    @ContributesAndroidInjector(modules = [OrderAwaitingModule::class])
+    @ContributesAndroidInjector(modules = [OrderAwaitingVMModule::class])
     abstract fun contributeOrderAwaitingFragment(): OrderAwaitingFragment
 }

@@ -18,7 +18,7 @@ import com.coffeedose.R
 import com.coffeedose.databinding.FragmentDrinksBinding
 import com.office14.coffeedose.di.InjectingSavedStateViewModelFactory
 import com.office14.coffeedose.extensions.setBooleanVisibility
-import com.office14.coffeedose.repository.PreferencesRepository
+import com.office14.coffeedose.plugins.PreferencesRepositoryImpl
 import com.office14.coffeedose.ui.Adapters.DrinksListAdapter
 import com.office14.coffeedose.viewmodels.DrinksViewModel
 import dagger.android.support.DaggerFragment
@@ -175,12 +175,12 @@ class DrinksFragment : DaggerFragment(), HasDefaultViewModelProviderFactory,
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
-        val email = PreferencesRepository.getUserEmail()
+        val email = PreferencesRepositoryImpl.getUserEmail()
         menu.findItem(R.id.userInfo).title =
-            if (email == PreferencesRepository.EMPTY_STRING) getString(R.string.Unauthrorized) else email
-        menu.findItem(R.id.login).isVisible = email == PreferencesRepository.EMPTY_STRING
-        menu.findItem(R.id.logout).isVisible = email != PreferencesRepository.EMPTY_STRING
-        menu.findItem(R.id.changeUser).isVisible = email != PreferencesRepository.EMPTY_STRING
+            if (email == PreferencesRepositoryImpl.EMPTY_STRING) getString(R.string.Unauthrorized) else email
+        menu.findItem(R.id.login).isVisible = email == PreferencesRepositoryImpl.EMPTY_STRING
+        menu.findItem(R.id.logout).isVisible = email != PreferencesRepositoryImpl.EMPTY_STRING
+        menu.findItem(R.id.changeUser).isVisible = email != PreferencesRepositoryImpl.EMPTY_STRING
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -283,13 +283,13 @@ class DrinksFragment : DaggerFragment(), HasDefaultViewModelProviderFactory,
         val view = layoutInflater.inflate(R.layout.view_edit_text_dialog, null)
 
         val categoryEditText = view.findViewById<EditText>(R.id.dialogEditText)
-        categoryEditText.setText(PreferencesRepository.getBaseUrl())
+        categoryEditText.setText(PreferencesRepositoryImpl.getBaseUrl())
 
         builder.setView(view)
 
 
         builder.setPositiveButton(android.R.string.ok) { dialog, p1 ->
-            PreferencesRepository.saveBaseUrl(categoryEditText.text.toString())
+            PreferencesRepositoryImpl.saveBaseUrl(categoryEditText.text.toString())
         }
 
         builder.show()

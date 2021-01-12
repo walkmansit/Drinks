@@ -1,16 +1,30 @@
 package com.office14.coffeedose.di.ordersawaiting
 
-import androidx.lifecycle.ViewModel
-import com.office14.coffeedose.di.ViewModelKey
-import com.office14.coffeedose.viewmodels.OrderAwaitingViewModel
-import dagger.Binds
+import com.office14.coffeedose.di.catalog.CatalogScope
+import com.office14.coffeedose.di.orders.OrdersScope
+import com.office14.coffeedose.domain.repository.OrderDetailsRepository
+import com.office14.coffeedose.domain.repository.OrdersRepository
+import com.office14.coffeedose.domain.repository.PreferencesRepository
+import com.office14.coffeedose.domain.usecase.ConfirmOrder
+import com.office14.coffeedose.domain.usecase.GetLastOrderInfo
+import com.office14.coffeedose.domain.usecase.MarkOrderAsFinishedForUser
 import dagger.Module
-import dagger.multibindings.IntoMap
+import dagger.Provides
 
 @Module
 abstract class OrderAwaitingModule {
-    @Binds
-    @IntoMap
-    @ViewModelKey(OrderAwaitingViewModel::class)
-    abstract fun bindOrderAwaitingViewModel(viewModel: OrderAwaitingViewModel): ViewModel
+
+    @OrdersAwaitingScope
+    //@Module
+    companion object {
+        @OrdersAwaitingScope
+        @Provides
+        fun provideGetLastOrderInfoUseCase(ordersRepository: OrdersRepository, preferencesRepository: PreferencesRepository)  =
+            GetLastOrderInfo(ordersRepository,preferencesRepository)
+
+        @OrdersAwaitingScope
+        @Provides
+        fun provideMarkOrderAsFinishedForUserUseCase(ordersRepository: OrdersRepository, preferencesRepository: PreferencesRepository)  =
+            MarkOrderAsFinishedForUser(ordersRepository)
+    }
 }

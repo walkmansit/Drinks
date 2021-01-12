@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.coffeedose.R
 import com.coffeedose.databinding.ViewOrderDetailsItemBinding
-import com.office14.coffeedose.domain.OrderDetailFull
+import com.office14.coffeedose.domain.entity.OrderDetailFull
 
 class OrderDetailsAdapter() : RecyclerView.Adapter<OrderDetailsAdapter.OrderDetailViewHolder>() {
 

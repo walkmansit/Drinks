@@ -7,7 +7,7 @@ import androidx.core.content.ContextCompat
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.coffeedose.R
-import com.office14.coffeedose.domain.OrderStatus
+import com.office14.coffeedose.domain.entity.OrderStatus
 import com.office14.coffeedose.extensions.setBooleanVisibility
 
 @BindingAdapter("imageUrl")

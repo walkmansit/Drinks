@@ -1,5 +1,6 @@
 package com.office14.coffeedose
 
+import android.app.Activity
 import android.content.Context
 import androidx.databinding.DataBindingUtil
 import com.office14.coffeedose.bindings.BindingComponent
@@ -14,6 +15,7 @@ import dagger.android.support.DaggerApplication
 
 class CoffeeDoseApplication : DaggerApplication() {
 
+    var currentActivity : Activity? = null
 
     private lateinit var appComponent: AppComponent
 
@@ -28,7 +30,6 @@ class CoffeeDoseApplication : DaggerApplication() {
     init {
         instance = this
     }
-
 
     override fun onCreate() {
         super.onCreate()

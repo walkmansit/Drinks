@@ -7,8 +7,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.coffeedose.databinding.ViewOrderAwaitingHeaderBinding
 import com.coffeedose.databinding.ViewOrderAwaitingListItemBinding
-import com.office14.coffeedose.domain.OrderDetailFull
-import com.office14.coffeedose.domain.OrderInfo
+import com.office14.coffeedose.domain.entity.OrderDetailFull
+import com.office14.coffeedose.domain.entity.OrderInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

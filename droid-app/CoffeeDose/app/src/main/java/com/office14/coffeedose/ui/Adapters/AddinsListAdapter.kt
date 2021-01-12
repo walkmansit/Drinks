@@ -10,15 +10,15 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.coffeedose.R
-import com.office14.coffeedose.domain.Addin
+import com.office14.coffeedose.entity.AddinView
 
 class AddinsListAdapter(context: Context, val listener: AddinCheckListener) : BaseAdapter() {
 
     private val _inflater: LayoutInflater = LayoutInflater.from(context)
 
-    private var items: List<Addin> = listOf()
+    private var items: List<AddinView> = listOf()
 
-    fun setItems(source: List<Addin>) {
+    fun setItems(source: List<AddinView>) {
         items = source
         notifyDataSetChanged()
     }
@@ -53,7 +53,7 @@ class AddinsListAdapter(context: Context, val listener: AddinCheckListener) : Ba
         private val price = view.findViewById<TextView>(R.id.tv_addin_price)
         private val checkBox = view.findViewById<CheckBox>(R.id.cb_addin_select)
 
-        fun rebindViewHolder(item: Addin) {
+        fun rebindViewHolder(item: AddinView) {
 
             Glide.with(icon.context)
                 .load(item.photoUrl)
@@ -73,6 +73,6 @@ class AddinsListAdapter(context: Context, val listener: AddinCheckListener) : Ba
     }
 }
 
-class AddinCheckListener(val clickListener: (addin: Addin, isChecked: Boolean) -> Unit) {
-    fun onClick(addin: Addin, isChecked: Boolean) = clickListener(addin, isChecked)
+class AddinCheckListener(val clickListener: (addin: AddinView, isChecked: Boolean) -> Unit) {
+    fun onClick(addin: AddinView, isChecked: Boolean) = clickListener(addin, isChecked)
 }

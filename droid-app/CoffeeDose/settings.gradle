@@ -1,2 +1,4 @@
+include ':domain'
+include ':data'
 include ':app'
 rootProject.name='com.office14.coffeedose'

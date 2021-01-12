@@ -21,9 +21,10 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.iid.FirebaseInstanceId
+import com.office14.coffeedose.CoffeeDoseApplication
 import com.office14.coffeedose.di.InjectingSavedStateViewModelFactory
-import com.office14.coffeedose.repository.PreferencesRepository
-import com.office14.coffeedose.repository.PreferencesRepository.EMPTY_STRING
+import com.office14.coffeedose.plugins.PreferencesRepositoryImpl
+import com.office14.coffeedose.plugins.PreferencesRepositoryImpl.EMPTY_STRING
 import com.office14.coffeedose.viewmodels.MenuInfoViewModel
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
@@ -34,10 +35,6 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
-
-
-    @Inject
-    lateinit var message: String
 
     @Inject
     lateinit var abstractViewModelFactory: InjectingSavedStateViewModelFactory
@@ -64,6 +61,7 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
         setUpNavigation()
 
         handleMenuUpdate()
+        (application as CoffeeDoseApplication).currentActivity = this
     }
 
     private fun setUpNavigation() {
@@ -103,7 +101,7 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
             if (it.containsKey(FromNotificationKey) && it.getBoolean(FromNotificationKey)) {
                 val navigateId = it.getInt(DestinationFragmentIDKey)
                 if (navigateId == OrderAwatingFragmentID) {
-                    PreferencesRepository.saveNavigateToOrderAwaitFrag(true)
+                    PreferencesRepositoryImpl.saveNavigateToOrderAwaitFrag(true)
                 }
             }
         }
@@ -172,8 +170,8 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
             if (tokenIdTask.isSuccessful) {
                 if (tokenIdTask.result != null && tokenIdTask.result!!.token != null) {
                     val token = tokenIdTask.result!!.token!!
-                    PreferencesRepository.saveIdToken(token)
-                    PreferencesRepository.saveUserEmail(account.email!!)
+                    PreferencesRepositoryImpl.saveIdToken(token)
+                    PreferencesRepositoryImpl.saveUserEmail(account.email!!)
                     menuInfoViewModel.refreshOrderDetailsByUser()
                     menuInfoViewModel.user?.let { it.idToken = token }
                     menuInfoViewModel.updateUser()
@@ -187,7 +185,7 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
 
     fun signIn(successCallback: () -> Unit) {
 
-        if (PreferencesRepository.getUserEmail() != EMPTY_STRING)
+        if (PreferencesRepositoryImpl.getUserEmail() != EMPTY_STRING)
             logout()
 
         successAuthCallback = successCallback
@@ -211,7 +209,7 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
 
 
 
-        with(PreferencesRepository) {
+        with(PreferencesRepositoryImpl) {
             menuInfoViewModel.deleteFcmDeviceTokenOnLogOut(getDeviceID(), getIdToken()!!)
             saveUserEmail(EMPTY_STRING)
             saveIdToken(EMPTY_STRING)
@@ -233,8 +231,8 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
     }
 
     private fun checkFcmRegToken() {
-        val fcmRegToken = PreferencesRepository.getFcmRegToken()
-        if (fcmRegToken == PreferencesRepository.EMPTY_STRING) {
+        val fcmRegToken = PreferencesRepositoryImpl.getFcmRegToken()
+        if (fcmRegToken == PreferencesRepositoryImpl.EMPTY_STRING) {
             getAndUpdateActualFcmToken()
         }
     }
@@ -248,7 +246,7 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
                 }
 
                 if (task.result?.token?.isNotEmpty() == true) {
-                    PreferencesRepository.saveFcmRegToken(task.result!!.token!!)
+                    PreferencesRepositoryImpl.saveFcmRegToken(task.result!!.token!!)
                     menuInfoViewModel.updateFcmDeviceToken()
                 }
             })
@@ -262,6 +260,11 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
 
     fun updateTheme(theme: Int) {
         delegate.localNightMode = theme
+    }
+
+    override fun onDestroy() {
+        (application as CoffeeDoseApplication).currentActivity = null
+        super.onDestroy()
     }
 
     companion object {

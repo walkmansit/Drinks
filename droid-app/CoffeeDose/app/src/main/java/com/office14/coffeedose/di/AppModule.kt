@@ -4,16 +4,21 @@ import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
-import com.office14.coffeedose.database.CoffeeDatabase
-import com.office14.coffeedose.network.CoffeeApiService
-import com.office14.coffeedose.repository.OrderDetailsRepository
-import com.office14.coffeedose.repository.OrdersRepository
-import com.office14.coffeedose.repository.PreferencesRepository
-import com.office14.coffeedose.repository.UsersRepository
+import com.office14.coffeedose.data.database.CoffeeDatabase
+import com.office14.coffeedose.data.network.CoffeeApiService
+import com.office14.coffeedose.data.repository.*
+import com.office14.coffeedose.di.orders.OrdersScope
+import com.office14.coffeedose.plugins.PreferencesRepositoryImpl
+import com.office14.coffeedose.domain.exception.NetworkHandler
+import com.office14.coffeedose.domain.repository.*
+import com.office14.coffeedose.domain.usecase.GetCurrentQueueOrderByUser
+import com.office14.coffeedose.networkhandler.NetworkHandlerImpl
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
 import dagger.Provides
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import javax.inject.Singleton
@@ -24,17 +29,6 @@ abstract class AppModule {
     @Singleton
     //@Module
     companion object {
-
-        /*@Singleton
-        @Provides
-        var provideUser() : User? {
-            return nul
-        }*/
-
-        @Singleton
-        @Provides
-        fun provideMessage() = "All fine"
-
 
         @Singleton
         @Provides
@@ -52,7 +46,7 @@ abstract class AppModule {
             return Retrofit.Builder()
                 .addConverterFactory(MoshiConverterFactory.create(moshi))
                 .addCallAdapterFactory(CoroutineCallAdapterFactory())
-                .baseUrl(PreferencesRepository.getBaseUrl())
+                .baseUrl(PreferencesRepositoryImpl.getBaseUrl())
                 .build()
         }
 
@@ -72,21 +66,35 @@ abstract class AppModule {
 
         @Singleton
         @Provides
-        fun provideOrderDetailsRepository(database: CoffeeDatabase) =
-            OrderDetailsRepository(database.orderDetailsDatabaseDao)
+        fun provideNetworkHandler(context: Context) : NetworkHandler = NetworkHandlerImpl(context)
 
         @Singleton
         @Provides
-        fun provideOrdersRepository(database: CoffeeDatabase, apiService: CoffeeApiService) =
-            OrdersRepository(
-                database.ordersDatabaseDao,
-                apiService
-            )
+        fun provideIoDispatcher() = Dispatchers.IO
+
+        @Singleton
+        @Provides
+        fun provideOrderDetailsRepository(database: CoffeeDatabase) : OrderDetailsRepository =
+            OrderDetailsRepositoryImpl(database.orderDetailsDatabaseDao)
+
+        @Singleton
+        @Provides
+        fun provideOrdersRepository(database: CoffeeDatabase, apiService: CoffeeApiService) : OrdersRepository =
+            OrdersRepositoryImpl(database.ordersDatabaseDao,apiService)
 
 
         @Singleton
         @Provides
-        fun provideUsersRepository(database: CoffeeDatabase) =
-            UsersRepository(database.usersDatabaseDao)
+        fun provideUsersRepository(database: CoffeeDatabase) : UsersRepository =
+            UsersRepositoryImpl(database.usersDatabaseDao)
+
+        @Singleton
+        @Provides
+        fun providePreferencesRepository() : PreferencesRepository = PreferencesRepositoryImpl
+
+        @Singleton
+        @Provides
+        fun provideGetCurrentQueueOrderByUserUseCase(ordersRepository: OrdersRepository)  =
+            GetCurrentQueueOrderByUser(ordersRepository)
     }
 }

@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
 import com.coffeedose.R
-import com.office14.coffeedose.domain.CoffeeSize
+import com.office14.coffeedose.domain.entity.CoffeeSize
 
 class SizeSpinnerAdapter(private val context: Context) : BaseAdapter() {
 

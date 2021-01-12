@@ -2,27 +2,34 @@ package com.office14.coffeedose.viewmodels
 
 import android.app.Application
 import androidx.lifecycle.*
-import com.office14.coffeedose.domain.OrderDetailFull
+import com.office14.coffeedose.domain.entity.OrderDetailFull
+import com.office14.coffeedose.plugins.PreferencesRepositoryImpl
+import com.office14.coffeedose.domain.entity.Order
+import com.office14.coffeedose.domain.exception.Failure
+import com.office14.coffeedose.domain.interactor.UseCaseBase
+import com.office14.coffeedose.domain.usecase.*
 import com.office14.coffeedose.extensions.mutableLiveData
-import com.office14.coffeedose.network.HttpExceptionEx
-import com.office14.coffeedose.repository.OrderDetailsRepository
-import com.office14.coffeedose.repository.OrdersRepository
-import com.office14.coffeedose.repository.PreferencesRepository
-import com.office14.coffeedose.repository.PreferencesRepository.EMPTY_STRING
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
 
 class OrderDetailsViewModel @Inject constructor(
-    application: Application, private val ordersRepository: OrdersRepository,
-    private var orderDetailsRepository: OrderDetailsRepository
-) : AndroidViewModel(application) {
+    application: Application,
+    //private val ordersRepository: OrdersRepositoryImpl,
+    private val confirmOrder : ConfirmOrder,
+    private val clearOrderDetails : ClearOrderDetails,
+    private val deleteOrderDetailsItem: DeleteOrderDetailsItem,
+    private val getUnattachedOrderDetails: GetUnattachedOrderDetails,
+    private val getCurrentQueueOrderByUser : GetCurrentQueueOrderByUser
+    //private var orderDetailsRepository: OrderDetailsRepositoryImpl
+) : BaseViewModel(application) {
 
     private val viewModelJob = Job()
     private val viewModelScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
-    val email = PreferencesRepository.getUserEmail()!!
+    val email = PreferencesRepositoryImpl.getUserEmail()!!
     private val emailChannel = ConflatedBroadcastChannel<String>()
     private val emailFlow = emailChannel.asFlow()
 
@@ -34,7 +41,8 @@ class OrderDetailsViewModel @Inject constructor(
     val forceLongPolling: LiveData<Boolean>
         get() = _forceLongPolling
 
-    val unAttachedOrders = orderDetailsRepository.unAttachedOrderDetails(emailFlow).asLiveData()
+    private val _unAttachedOrders : MutableLiveData<List<OrderDetailFull>> = mutableLiveData()
+    val unAttachedOrders : LiveData<List<OrderDetailFull>> = _unAttachedOrders
 
     var comment: String? = null
 
@@ -50,25 +58,52 @@ class OrderDetailsViewModel @Inject constructor(
         return@map it.isEmpty()
     }
 
-    val hasOrderInQueue = Transformations.map(ordersRepository.getCurrentQueueOrderByUser(emailFlow).asLiveData()) {
-        return@map it != null
-    }
+    private val _hasOrderInQueue : MutableLiveData<Boolean> = mutableLiveData()
+    val hasOrderInQueue : LiveData<Boolean> = _hasOrderInQueue
 
     init {
+        getUnattachedOrderDetails()
+        getHasOrderInQueue()
         //if (email != EMPTY_STRING)
             emailChannel.offer(email)
     }
 
     fun deleteOrderDetailsItem(item: OrderDetailFull) {
-        viewModelScope.launch {
-            orderDetailsRepository.delete(item.orderDetailInner)
+        deleteOrderDetailsItem(DeleteOrderDetailsItem.Params(item.orderDetailInner)){
+            it.fold({::handleFailure},{})
+        }
+    }
+
+    private fun getHasOrderInQueue(){
+        fun handleNoOrder(failure:Failure){
+            _hasOrderInQueue.value = false
+        }
+        fun handleOrder(order:Order){
+            _hasOrderInQueue.value = true
+        }
+        getCurrentQueueOrderByUser(GetCurrentQueueOrderByUser.Params(emailChannel.asFlow())){
+            it.mapLatest { either -> either.fold(::handleNoOrder,::handleOrder) }
+        }
+    }
+
+    private fun getUnattachedOrderDetails(){
+        fun handleUpdate(list : List<OrderDetailFull>){
+            _unAttachedOrders.value = list
+        }
+        getUnattachedOrderDetails(GetUnattachedOrderDetails.Params(emailFlow)){
+            it.mapLatest { either ->
+                either.fold(::handleFailure,::handleUpdate)
+            }
         }
     }
 
     fun confirmOrder() {
+        confirmOrder(ConfirmOrder.Params(comment?:"")){
+            it.fold(::handleFailure,::handleConfirmOrder)
+        }
 
 
-        viewModelScope.launch {
+       /* viewModelScope.launch {
             try {
 
                 if (email != EMPTY_STRING) {
@@ -85,7 +120,7 @@ class OrderDetailsViewModel @Inject constructor(
                 val newOrderId = ordersRepository.createOrder(
                     ordersForAdd,
                     comment,
-                    PreferencesRepository.getIdToken(),
+                    PreferencesRepositoryImpl.getIdToken(),
                     email
                 )
 
@@ -97,18 +132,20 @@ class OrderDetailsViewModel @Inject constructor(
                 _forceLongPolling.value = true
 
                 _navigateOrderAwaiting.value = true
-            } catch (responseEx: HttpExceptionEx) {
+            } catch (responseEx: com.office14.coffeedose.data.network.HttpExceptionEx) {
                 _errorMessage.value = responseEx.error.title
             } catch (ex: Exception) {
                 if (ex.message?.contains("401") == true) {
                     _needLogin.value = true
                     _errorMessage.value = "Необходима авторизация"
                 }
-                /*else
-                    _errorMessage.value = "Ошибка получения данных"*/
             }
-        }
-        //return true
+        }*/
+    }
+
+    private fun handleConfirmOrder(param : UseCaseBase.None){
+        _forceLongPolling.value = true
+        _navigateOrderAwaiting.value = true
     }
 
     fun doneLogin() {
@@ -125,11 +162,8 @@ class OrderDetailsViewModel @Inject constructor(
     }
 
     fun clearOrderDetails() {
-        viewModelScope.launch {
-            if (email == EMPTY_STRING)
-                orderDetailsRepository.deleteUnAttached()
-            else
-                orderDetailsRepository.deleteOrderDetailsByEmail(email!!)
+        clearOrderDetails(UseCaseBase.None()){
+            it.fold({::handleFailure},{})
         }
     }
 

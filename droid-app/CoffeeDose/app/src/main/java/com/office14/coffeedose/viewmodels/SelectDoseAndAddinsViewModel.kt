@@ -1,48 +1,54 @@
 package com.office14.coffeedose.viewmodels
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.*
 import com.office14.coffeedose.di.AssistedSavedStateViewModelFactory
-import com.office14.coffeedose.domain.Addin
-import com.office14.coffeedose.domain.CoffeeSize
-import com.office14.coffeedose.domain.OrderDetail
+import com.office14.coffeedose.domain.entity.CoffeeSize
+import com.office14.coffeedose.domain.entity.OrderDetail
 import com.office14.coffeedose.extensions.mutableLiveData
-import com.office14.coffeedose.network.HttpExceptionEx
-import com.office14.coffeedose.repository.AddinsRepository
-import com.office14.coffeedose.repository.OrderDetailsRepository
-import com.office14.coffeedose.repository.PreferencesRepository
-import com.office14.coffeedose.repository.PreferencesRepository.EMPTY_STRING
-import com.office14.coffeedose.repository.SizesRepository
+import com.office14.coffeedose.plugins.PreferencesRepositoryImpl
+import com.office14.coffeedose.domain.entity.Addin
+import com.office14.coffeedose.domain.interactor.UseCaseBase
+import com.office14.coffeedose.domain.usecase.*
+import com.office14.coffeedose.entity.AddinView
 import com.squareup.inject.assisted.Assisted
 import com.squareup.inject.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
 
 class SelectDoseAndAddinsViewModel @AssistedInject constructor(
     application: Application,
     @Assisted private val savedStateHandle: SavedStateHandle,
-    private val sizesRepository: SizesRepository,
-    private val addinsRepository: AddinsRepository,
-    private val orderDetailsRepository: OrderDetailsRepository
-) : AndroidViewModel(application) {
+    private val getSizes: GetSizes,
+    private val getAddins: GetAddins,
+    private val refreshSizes : RefreshSizes,
+    private val refreshAddins: RefreshAddins,
+    private val getSummaryPrice : GetSummaryPrice,
+    private val mergeOrderDetailsIn: MergeOrderDetailsIn,
 
+) : BaseViewModel(application) {
 
-    var sizes = sizesRepository.getSizes(savedStateHandle.get<Int>("drinkId") ?: -1).asLiveData()
+    private val drinkId = savedStateHandle.get<Int>("drinkId") ?: -1
 
-    val addins = addinsRepository.addins.asLiveData()
+    private val _sizes : MutableLiveData<List<CoffeeSize>> = mutableLiveData()
+    val sizes : LiveData<List<CoffeeSize>> = _sizes
 
-    private val drinkId: Int = savedStateHandle.get<Int>("drinkId") ?: -1
+    private val _addins: MutableLiveData<List<AddinView>> = mutableLiveData()
+    val addins : LiveData<List<AddinView>> = _addins
 
     private val viewModelJob = Job()
 
     private val viewModelScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
-    private val addinsTotal = mutableLiveData(0)
+    //private val addinsTotal = mutableLiveData(0)
 
-    val count = mutableLiveData(1)
+    private val _count:MutableLiveData<Int> = mutableLiveData(1)
+    val count : LiveData<Int> =_count
 
     var isRefreshing = mutableLiveData(false)
 
@@ -50,14 +56,83 @@ class SelectDoseAndAddinsViewModel @AssistedInject constructor(
 
     private val _navigateDrinks = MutableLiveData<Boolean>()
 
+    //private var selectedItemIndex = mutableLiveData(-1)
+    private var selectedSizeIndex = -1
+
+    private val selectedSizeChannel = ConflatedBroadcastChannel<CoffeeSize>()
+    private val addInsChannel = ConflatedBroadcastChannel<List<Addin>>()
+    private val countChannel = ConflatedBroadcastChannel<Int>()
+
+    /*val selectedSize: LiveData<CoffeeSize?>
+        get() = _selectedSize*/
+
     val navigateDrinks: LiveData<Boolean>
         get() = _navigateDrinks
 
     init {
+        loadSizes(drinkId)
+        loadAddins()
+        getTotal()
         refreshData()
+        initTotal()
     }
 
-    fun getSummary(): LiveData<String> {
+    private fun initTotal(){
+        countChannel.offer(1)
+        addInsChannel.offer(listOf())
+    }
+
+
+    private fun loadSizes(drinkId:Int){
+        getSizes(GetSizes.Params(drinkId)){
+            it.mapLatest { either ->
+                either.fold(::handleFailure, ::handleSizesLoaded)
+            }.launchIn(viewModelScope)
+        }
+    }
+
+    private fun loadAddins(){
+        getAddins(UseCaseBase.None()){
+            it.mapLatest { either ->
+                either.fold(::handleFailure, ::handleAddinsLoaded)
+            }.launchIn(viewModelScope)
+        }
+    }
+
+    private fun handleSizesLoaded(sizesInp:List<CoffeeSize>){
+        _sizes.value = sizesInp
+    }
+
+    private fun handleAddinsLoaded(addinsInp:List<Addin>){
+        _addins.value = addinsInp.map { AddinView.fromAddin(it) }
+    }
+
+    private val _summary : MutableLiveData<String> = mutableLiveData()
+    val summary : LiveData<String> = _summary
+
+    private fun getTotal(){
+        val params : GetSummaryPrice.Params = GetSummaryPrice.Params(
+            addInsChannel.asFlow(),
+            selectedSizeChannel.asFlow(),
+            countChannel.asFlow()
+        )
+        getSummaryPrice(params) {
+            it.mapLatest {
+                either -> either.fold(::handleFailure,::handleTotal)
+            }.launchIn(viewModelScope)
+        }
+    }
+
+    private fun handleTotal(total : String){
+        _summary.value = total
+    }
+
+    /*fun getSummary(): LiveData<String> {
+
+
+
+        return
+
         var result = MediatorLiveData<String>()
 
         val update = {
@@ -73,44 +148,37 @@ class SelectDoseAndAddinsViewModel @AssistedInject constructor(
         result.addSource(count) { update.invoke() }
 
         return result
+    }*/
 
-    }
 
-    private var selectedItemIndex = mutableLiveData(-1)
 
-    val selectedSize: LiveData<CoffeeSize?>
-        get() = _selectedSize
-
-    private var _selectedSize = Transformations.map(selectedItemIndex) {
+    /*private var _selectedSize = Transformations.map(selectedItemIndex) {
         if (sizes.value == null)
             return@map null
         else return@map sizes.value!![selectedItemIndex.value!!]
-    }
+    }*/
 
 
     fun refreshData(showRefresh: Boolean = false) {
-        viewModelScope.launch {
-            try {
 
-                if (showRefresh) isRefreshing.value = true
+        if (showRefresh) isRefreshing.value = true
+        refreshSizes(RefreshSizes.Params(drinkId)){
+            it.fold(::handleFailure) { if (showRefresh) isRefreshing.value = false }
+        }
 
-                sizesRepository.refreshSizes(drinkId)
-                addinsRepository.refreshAddins()
-
-                errorMessage.value = null
-            } catch (responseEx: HttpExceptionEx) {
-                errorMessage.value = responseEx.error.title
-            } catch (ex: java.lang.Exception) {
-                errorMessage.value = ex.message
-            } finally {
-                if (showRefresh) isRefreshing.value = false
-            }
+        if (showRefresh) isRefreshing.value = true
+        refreshAddins(UseCaseBase.None()){
+            it.fold(::handleFailure) { if (showRefresh) isRefreshing.value = false }
         }
     }
 
     fun onSelectedSizeIndexChanged(newIndex: Int) {
-        if (newIndex != selectedItemIndex.value)
-            selectedItemIndex.value = newIndex
+        selectedSizeIndex = newIndex
+        val size = sizes.value!![newIndex]
+        selectedSizeChannel.offer(size)
+
+        /*if (newIndex != selectedItemIndex.value)
+            selectedItemIndex.value = newIndex*/
     }
 
     override fun onCleared() {
@@ -118,15 +186,18 @@ class SelectDoseAndAddinsViewModel @AssistedInject constructor(
         viewModelJob.cancel()
     }
 
-    fun updateTotalOnAddinCheck(addin: Addin, isChecked: Boolean) {
-        if (isChecked) addinsTotal.value = addinsTotal.value?.plus(addin.price)
-        else addinsTotal.value = addinsTotal.value?.minus(addin.price)
+    fun updateSelectedAddins(addin: AddinView, isChecked: Boolean) {
 
         addin.isSelected = isChecked
+        _addins.value?.let { addInsChannel.offer(it.filter { item -> item.isSelected }.map { item -> item.toDomainModel() }) }
+
     }
 
     fun updateCount(newValue: Int) {
-        if (count.value!! != newValue) count.value = newValue
+        if (_count.value!! != newValue) {
+            _count.value = newValue
+            countChannel.offer(newValue)
+        }
     }
 
     private fun getAddinsToString(): String? {
@@ -135,30 +206,25 @@ class SelectDoseAndAddinsViewModel @AssistedInject constructor(
     }
 
     fun addIntoOrderDetails() {
-        viewModelScope.launch {
-            try {
+        val email = PreferencesRepositoryImpl.getUserEmail()!!
 
-                var owner: String? = null
-                val email = PreferencesRepository.getUserEmail()!!
-                if (email != EMPTY_STRING) {
-                    owner = email
-                }
+        val newOrderDetail = OrderDetail(
+            id = 0,
+            drinkId = drinkId,
+            sizeId = sizes.value!![selectedSizeIndex].id,
+            addIns = addins.value?.filter { it.isSelected }?.map { it.toDomainModel() } ?: listOf(),
+            count = count.value!!,
+            owner = email,
+            orderId = null
+        )
 
-                orderDetailsRepository.mergeIn(OrderDetail(
-                    id = 0,
-                    drinkId = drinkId,
-                    sizeId = selectedSize.value!!.id,
-                    addIns = addins.value?.filter { it.isSelected } ?: listOf(),
-                    count = count.value!!,
-                    owner = owner,
-                    orderId = null
-                ))
-
-                _navigateDrinks.value = true
-            } catch (ex: Exception) {
-                Log.d("SelectDoseAndAddinsViewModel.saveOrderDetails", ex.message)
-            }
+        mergeOrderDetailsIn(MergeOrderDetailsIn.Params(newOrderDetail)){ either ->
+            either.fold(::handleFailure,::navigateDrinks)
         }
+    }
+
+    private fun navigateDrinks(right:UseCaseBase.None){
+        _navigateDrinks.value = true
     }
 
     fun doneNavigating() {

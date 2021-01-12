@@ -148,7 +148,7 @@ class SelectDoseAndAddinsFragment(
         val addinsListAdapter = AddinsListAdapter(
             requireContext(),
             AddinCheckListener { addin, isChecked ->
-                viewModel.updateTotalOnAddinCheck(
+                viewModel.updateSelectedAddins(
                     addin,
                     isChecked
                 )

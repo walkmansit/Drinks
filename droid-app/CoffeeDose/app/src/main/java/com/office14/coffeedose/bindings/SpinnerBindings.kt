@@ -2,7 +2,7 @@ package com.office14.coffeedose.bindings
 
 import android.widget.Spinner
 import androidx.databinding.BindingAdapter
-import com.office14.coffeedose.domain.Coffee
+import com.office14.coffeedose.domain.entity.Coffee
 import com.office14.coffeedose.extensions.ItemSelectedListener
 import com.office14.coffeedose.extensions.setSpinnerEntries
 import com.office14.coffeedose.extensions.setSpinnerItemSelectedListener

@@ -7,7 +7,7 @@
 
         <variable
             name="item"
-            type="com.office14.coffeedose.domain.OrderInfo" />
+            type="com.office14.coffeedose.domain.entity.OrderInfo" />
     </data>
 
     <LinearLayout

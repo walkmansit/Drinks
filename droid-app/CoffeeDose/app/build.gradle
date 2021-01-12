@@ -59,6 +59,10 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation project(':domain')
+    implementation project(':data')
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.21"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
@@ -108,7 +112,6 @@ dependencies {
 
     // Room database
     implementation "androidx.room:room-runtime:$version_room"
-    //implementation "androidx.room:room-coroutines:2.1.0-alpha04"
     implementation  "androidx.room:room-ktx:$version_room"
     kapt "androidx.room:room-compiler:$version_room"
 

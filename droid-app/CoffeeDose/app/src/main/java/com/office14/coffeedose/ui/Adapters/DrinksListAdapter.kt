@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.coffeedose.databinding.ViewDrinkListItemBinding
-import com.office14.coffeedose.domain.Coffee
+import com.office14.coffeedose.domain.entity.Coffee
 import com.office14.coffeedose.ui.CoffeeItemClickListener
 
 class DrinksListAdapter(private val clickListener: CoffeeItemClickListener) : ListAdapter<Coffee,
