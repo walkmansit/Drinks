@@ -3,16 +3,13 @@ package com.office14.coffeedose.viewmodels
 import android.app.Application
 import androidx.lifecycle.*
 import com.office14.coffeedose.domain.entity.OrderDetailFull
-import com.office14.coffeedose.plugins.PreferencesRepositoryImpl
 import com.office14.coffeedose.domain.entity.Order
 import com.office14.coffeedose.domain.exception.Failure
 import com.office14.coffeedose.domain.interactor.UseCaseBase
 import com.office14.coffeedose.domain.usecase.*
 import com.office14.coffeedose.extensions.mutableLiveData
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
 class OrderDetailsViewModel @Inject constructor(
@@ -29,17 +26,15 @@ class OrderDetailsViewModel @Inject constructor(
     private val viewModelJob = Job()
     private val viewModelScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
-    val email = PreferencesRepositoryImpl.getUserEmail()!!
-    private val emailChannel = ConflatedBroadcastChannel<String>()
-    private val emailFlow = emailChannel.asFlow()
+    //val email = PreferencesRepositoryImpl.getUserEmail()!!
+    //private val emailChannel = ConflatedBroadcastChannel<String>()
+    //private val emailFlow = emailChannel.asFlow()
 
     private val _navigateOrderAwaiting = MutableLiveData<Boolean>()
-    val navigateOrderAwaiting: LiveData<Boolean>
-        get() = _navigateOrderAwaiting
+    val navigateOrderAwaiting: LiveData<Boolean> = _navigateOrderAwaiting
 
     private val _forceLongPolling = MutableLiveData<Boolean>()
-    val forceLongPolling: LiveData<Boolean>
-        get() = _forceLongPolling
+    val forceLongPolling: LiveData<Boolean> =  _forceLongPolling
 
     private val _unAttachedOrders : MutableLiveData<List<OrderDetailFull>> = mutableLiveData()
     val unAttachedOrders : LiveData<List<OrderDetailFull>> = _unAttachedOrders
@@ -64,8 +59,7 @@ class OrderDetailsViewModel @Inject constructor(
     init {
         getUnattachedOrderDetails()
         getHasOrderInQueue()
-        //if (email != EMPTY_STRING)
-            emailChannel.offer(email)
+        //emailChannel.offer(email)
     }
 
     fun deleteOrderDetailsItem(item: OrderDetailFull) {
@@ -81,25 +75,38 @@ class OrderDetailsViewModel @Inject constructor(
         fun handleOrder(order:Order){
             _hasOrderInQueue.value = true
         }
-        getCurrentQueueOrderByUser(GetCurrentQueueOrderByUser.Params(emailChannel.asFlow())){
-            it.mapLatest { either -> either.fold(::handleNoOrder,::handleOrder) }
+        getCurrentQueueOrderByUser(UseCaseBase.None()){
+            it.mapLatest { either -> either.fold(::handleNoOrder,::handleOrder) }.launchIn(viewModelScope)
         }
     }
 
     private fun getUnattachedOrderDetails(){
-        fun handleUpdate(list : List<OrderDetailFull>){
+        fun handleUpdate(list : List<OrderDetailFull>) {
             _unAttachedOrders.value = list
         }
-        getUnattachedOrderDetails(GetUnattachedOrderDetails.Params(emailFlow)){
+
+        getUnattachedOrderDetails(UseCaseBase.None()){
             it.mapLatest { either ->
                 either.fold(::handleFailure,::handleUpdate)
-            }
+            }.launchIn(viewModelScope)
         }
     }
 
+    fun handleConfirmOrder(param : UseCaseBase.None){
+        _forceLongPolling.value = true
+        _navigateOrderAwaiting.value = true
+    }
+
     fun confirmOrder() {
-        confirmOrder(ConfirmOrder.Params(comment?:"")){
-            it.fold(::handleFailure,::handleConfirmOrder)
+
+        fun handleConfirmFailure(failure: Failure){
+            _errorMessage.value = failure.message
+            if (failure is Failure.AuthotizationRequired)
+                _needLogin.value = true
+        }
+
+        confirmOrder(ConfirmOrder.Params(comment?:"",::confirmOrder)){
+            it.fold(::handleConfirmFailure,::handleConfirmOrder)
         }
 
 
@@ -137,16 +144,13 @@ class OrderDetailsViewModel @Inject constructor(
             } catch (ex: Exception) {
                 if (ex.message?.contains("401") == true) {
                     _needLogin.value = true
-                    _errorMessage.value = "Необходима авторизация"
+                    _errorMessage.value =
                 }
             }
         }*/
     }
 
-    private fun handleConfirmOrder(param : UseCaseBase.None){
-        _forceLongPolling.value = true
-        _navigateOrderAwaiting.value = true
-    }
+
 
     fun doneLogin() {
         _needLogin.value = false

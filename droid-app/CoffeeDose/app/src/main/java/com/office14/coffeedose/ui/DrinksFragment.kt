@@ -73,6 +73,8 @@ class DrinksFragment : DaggerFragment(), HasDefaultViewModelProviderFactory,
 
         handleSwitchTheme()
 
+        handleCurrentUserUpdate()
+
         //initOrdersButtonVisibility(binding.ordersFab)
 
         //initObserveListeners()
@@ -116,6 +118,13 @@ class DrinksFragment : DaggerFragment(), HasDefaultViewModelProviderFactory,
         })
     }
 
+    private fun handleCurrentUserUpdate(){
+        viewModel.user.observe(viewLifecycleOwner){
+            if (it != null){
+                activity?.invalidateOptionsMenu()
+            }
+        }
+    }
 
     private fun handleSwitchTheme(){
         viewModel.getTheme().observe(viewLifecycleOwner, Observer { updateTheme(it) })
@@ -175,12 +184,14 @@ class DrinksFragment : DaggerFragment(), HasDefaultViewModelProviderFactory,
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
-        val email = PreferencesRepositoryImpl.getUserEmail()
-        menu.findItem(R.id.userInfo).title =
-            if (email == PreferencesRepositoryImpl.EMPTY_STRING) getString(R.string.Unauthrorized) else email
-        menu.findItem(R.id.login).isVisible = email == PreferencesRepositoryImpl.EMPTY_STRING
-        menu.findItem(R.id.logout).isVisible = email != PreferencesRepositoryImpl.EMPTY_STRING
-        menu.findItem(R.id.changeUser).isVisible = email != PreferencesRepositoryImpl.EMPTY_STRING
+        viewModel.user.value?.let {
+
+            menu.findItem(R.id.userInfo).title =
+                    if (it.idDefault) getString(R.string.Unauthrorized) else it.email
+            menu.findItem(R.id.login).isVisible = it.idDefault
+            menu.findItem(R.id.logout).isVisible = !it.idDefault
+            menu.findItem(R.id.changeUser).isVisible = !it.idDefault
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -208,6 +219,8 @@ class DrinksFragment : DaggerFragment(), HasDefaultViewModelProviderFactory,
             else -> return false
         }
     }
+
+
 
     private fun prepareAuth() {
         (activity as CoffeeDoseActivity).signIn { }

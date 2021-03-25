@@ -34,7 +34,7 @@ data class LastOrderJso(
         id, statusCode, statusName, orderNumber, totalPrice, owner, "false", comment
     )
 
-    fun toOrderInfoDomainModel(): OrderInfo {
+    fun toOrderInfoDomainModel(owner: String): OrderInfo {
         val orderDetailsFullList: MutableList<OrderDetailFull> = mutableListOf()
 
         drinkDetais.forEach { drinkDetail ->
@@ -45,7 +45,7 @@ data class LastOrderJso(
                     0,
                     0,
                     drinkDetail.count,
-                    "",//TODO check, may be not null
+                    owner,
                     drinkDetail.addIns.map { it.toDomainModel() },
                     drinkDetail.drink.toDomainModel(),
                     drinkDetail.size.toDomainModel(),

@@ -1,9 +1,9 @@
 package com.office14.coffeedose.data.repository
 
-import android.util.Log
 import com.office14.coffeedose.data.network.CreateOrderBody
 import com.office14.coffeedose.data.network.DeleteFcmDeviceTokenBody
 import com.office14.coffeedose.data.network.PostFcmDeviceTokenBody
+import com.office14.coffeedose.domain.entity.LastOrderStatus
 import com.office14.coffeedose.domain.entity.Order
 import com.office14.coffeedose.domain.entity.OrderDetailFull
 import com.office14.coffeedose.domain.entity.OrderInfo
@@ -14,13 +14,10 @@ import com.office14.coffeedose.domain.interactor.UseCaseBase
 import com.office14.coffeedose.domain.repository.OrdersRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 class OrdersRepositoryImpl @Inject constructor(
     private val ordersDao: com.office14.coffeedose.data.database.OrderDao,
     private val coffeeApi: com.office14.coffeedose.data.network.CoffeeApiService
@@ -48,9 +45,9 @@ class OrdersRepositoryImpl @Inject constructor(
         return@map null
     }*/
 
-    override fun getCurrentQueueOrderByUser(emailFlow: Flow<String>): Flow<Order?> = ordersDao.getAllNotFinished().combine(emailFlow) { orders, email ->
-        orders.firstOrNull { it.owner == email }?.toDomainModel()
-        }.flowOn(defaultDispatcher).conflate()
+    override fun getCurrentQueueOrderByUser(email:String): Flow<Order?> =
+        ordersDao.getAllNotFinishedForuser(email).map { list -> list.firstOrNull()?.toDomainModel()
+        }
     /*{
         return ordersDao.getAllNotFinished().combine(emailFlow) { orders, email ->
             orders.filter { it.owner == email }.firstOrNull()?.map { it.toDomainModel() }
@@ -102,7 +99,7 @@ class OrdersRepositoryImpl @Inject constructor(
 
 
 
-    override fun createOrder (        orders: List<OrderDetailFull>,comment: String?, token: String?, email: String): Either<Failure,Int>  {
+    override fun createOrder (orders: List<OrderDetailFull>,comment: String?, token: String?, email: String): Either<Failure,Int>  {
         val ordersBody = CreateOrderBody(comment)
         ordersBody.fillWithOrders(orders)
         val newOrder = requestApi(coffeeApi.createOrder(ordersBody,composeAuthHeader(token))){
@@ -112,14 +109,14 @@ class OrdersRepositoryImpl @Inject constructor(
         return newOrder.map { it.id }
     }
 
-    override fun refreshLastOrderStatus(token: String?) : Either<Failure,UseCaseBase.None> {
+    override fun refreshLastOrderStatus(token: String) : Either<Failure, LastOrderStatus> {
         //withContext(ioDispatcher) {
             val status = requestApi(coffeeApi.getLastOrderStatusForUser(composeAuthHeader(token))){it.toDomainModel()}
             status.fold({},{ right ->
                 ordersDao.updateStatusCodeAndNameById(right.id,right.statusCode,right.statusName)
             })
             //delay(5000) //TODO handle delay
-            return status.map { UseCaseBase.None() }
+            return status
         //}
     }
 
@@ -146,8 +143,8 @@ class OrdersRepositoryImpl @Inject constructor(
     }
 
     // using only for got data on order awaiting screen
-    override fun getLastOrderInfo(token: String): Either<Failure,OrderInfo> =
-        requestApi(coffeeApi.getLastOrderForUser(composeAuthHeader(token))){it.toOrderInfoDomainModel()}
+    override fun getLastOrderInfo(token: String, owner:String): Either<Failure,OrderInfo> =
+        requestApi(coffeeApi.getLastOrderForUser(composeAuthHeader(token))){it.toOrderInfoDomainModel(owner)}
      /*
         val order =
 

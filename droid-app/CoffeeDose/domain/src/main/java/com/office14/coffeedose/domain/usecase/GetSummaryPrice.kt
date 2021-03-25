@@ -8,9 +8,8 @@ import com.office14.coffeedose.domain.interactor.UseCaseFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.mapLatest
-import javax.inject.Inject
 
-class GetSummaryPrice () : UseCaseFlow<String, GetSummaryPrice.Params>() {
+class GetSummaryPrice : UseCaseFlow<String, GetSummaryPrice.Params>() {
 
     data class Params(val addInsFlow:Flow<List<Addin>>,val selectedSizeFlow:Flow<CoffeeSize>,val countFlow:Flow<Int>)
 
@@ -18,6 +17,4 @@ class GetSummaryPrice () : UseCaseFlow<String, GetSummaryPrice.Params>() {
         .combine(params.selectedSizeFlow){ addins, size -> addins.map { it.price }.sum() + size.price }
         .combine(params.countFlow){ sum, count -> sum*count }
         .mapLatest { total -> Either.Right( "$total Р." )}
-
-
 }

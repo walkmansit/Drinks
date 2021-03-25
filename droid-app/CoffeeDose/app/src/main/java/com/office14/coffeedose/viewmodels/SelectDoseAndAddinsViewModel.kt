@@ -84,6 +84,10 @@ class SelectDoseAndAddinsViewModel @AssistedInject constructor(
 
 
     private fun loadSizes(drinkId:Int){
+        fun handleSizesLoaded(sizesInp:List<CoffeeSize>){
+            _sizes.value = sizesInp
+        }
+
         getSizes(GetSizes.Params(drinkId)){
             it.mapLatest { either ->
                 either.fold(::handleFailure, ::handleSizesLoaded)
@@ -92,6 +96,10 @@ class SelectDoseAndAddinsViewModel @AssistedInject constructor(
     }
 
     private fun loadAddins(){
+        fun handleAddinsLoaded(addinsInp:List<Addin>){
+            _addins.value = addinsInp.map { AddinView.fromAddin(it) }
+        }
+
         getAddins(UseCaseBase.None()){
             it.mapLatest { either ->
                 either.fold(::handleFailure, ::handleAddinsLoaded)
@@ -99,18 +107,13 @@ class SelectDoseAndAddinsViewModel @AssistedInject constructor(
         }
     }
 
-    private fun handleSizesLoaded(sizesInp:List<CoffeeSize>){
-        _sizes.value = sizesInp
-    }
-
-    private fun handleAddinsLoaded(addinsInp:List<Addin>){
-        _addins.value = addinsInp.map { AddinView.fromAddin(it) }
-    }
-
     private val _summary : MutableLiveData<String> = mutableLiveData()
     val summary : LiveData<String> = _summary
 
     private fun getTotal(){
+        fun handleTotal(total : String){
+            _summary.value = total
+        }
         val params : GetSummaryPrice.Params = GetSummaryPrice.Params(
             addInsChannel.asFlow(),
             selectedSizeChannel.asFlow(),
@@ -121,10 +124,6 @@ class SelectDoseAndAddinsViewModel @AssistedInject constructor(
                 either -> either.fold(::handleFailure,::handleTotal)
             }.launchIn(viewModelScope)
         }
-    }
-
-    private fun handleTotal(total : String){
-        _summary.value = total
     }
 
     /*fun getSummary(): LiveData<String> {

@@ -1,27 +1,33 @@
 package com.office14.coffeedose.data.repository
 
 import com.office14.coffeedose.data.database.AddinDbo
+import com.office14.coffeedose.data.database.OrderDetailAndDrinkAndSize
 import com.office14.coffeedose.data.database.OrderDetailDao
 import com.office14.coffeedose.data.database.OrderDetailDbo
 import com.office14.coffeedose.domain.entity.OrderDetail
 import com.office14.coffeedose.domain.entity.OrderDetailFull
 import com.office14.coffeedose.domain.repository.OrderDetailsRepository
 import com.office14.coffeedose.domain.entity.Addin
-import kotlinx.coroutines.CoroutineDispatcher
+import com.office14.coffeedose.domain.exception.Failure
+import com.office14.coffeedose.domain.functional.Either
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
-class OrderDetailsRepositoryImpl(
-    private val orderDetailsDao: OrderDetailDao
-    ) : BaseRepository(), OrderDetailsRepository {
+class OrderDetailsRepositoryImpl(private val orderDetailsDao: OrderDetailDao) : BaseRepository(), OrderDetailsRepository {
 
    /* val unAttachedOrderDetails =
         Transformations.map(orderDetailsDao.getUnAttachedDetails()) { itDbo ->
             itDbo.map { it.toDomainModel() }
         }*/
 
-    override fun unattachedOrderDetailsForUser(email: String): List<OrderDetailFull>  = orderDetailsDao.getUnAttachedDetailsForUserStraight(email).map { it.toDomainModel() }
+    override fun unattachedOrderDetailsForUser(email: String): Flow<Either<Failure, List<OrderDetailFull>>> =
+        orderDetailsDao.getUnAttachedDetailsForUser(email).map { list -> Either.Right( list.map { it.toDomainModel() }) }
+    /*=
+        orderDetailsDao.getUnAttachedDetailsForUser(email).map {
+                list ->Either.Right( list.map { it.toDomainModel()
+                }) }*/
 
             /*List<OrderDetailFull> {
         val result: MutableList<OrderDetailFull> = mutableListOf()
@@ -35,7 +41,7 @@ class OrderDetailsRepositoryImpl(
         return result
     }*/
 
-    override fun unattachedOrderDetailsWithoutUser(): List<OrderDetailFull> = orderDetailsDao.getUnAttachedDetailsWithoutUserStraight().map { it.toDomainModel() }
+    //override fun unattachedOrderDetailsWithoutUser(): List<OrderDetailFull> = orderDetailsDao.getUnAttachedDetailsWithoutUserStraight().map { it.toDomainModel() }
     /*{
         val result: MutableList<OrderDetailFull> = mutableListOf()
 
@@ -54,7 +60,7 @@ class OrderDetailsRepositoryImpl(
             itDbo.map { it.toDomainModel() }
         }*/
 
-    override fun unAttachedOrderDetails(emailFlow: Flow<String>): Flow<List<OrderDetailFull>> =  orderDetailsDao.getUnAttachedDetails().map { list -> list.map { it.toDomainModel() } }
+    //override fun unAttachedOrderDetails(emailFlow: Flow<String>): Flow<List<OrderDetailFull>> =  orderDetailsDao.getUnAttachedDetails().map { list -> list.map { it.toDomainModel() } }
 
     /*{
         val result = MediatorLiveData<List<OrderDetailFull>>()
@@ -93,9 +99,7 @@ class OrderDetailsRepositoryImpl(
     }*/
 
 
-    override fun unAttachedOrderDetailsCount(emailFlow: Flow<String>): Flow<Int> = orderDetailsDao.getUnAttachedDetails().combine(emailFlow) {
-            orders, email -> orders.filter { it.orderDetail.owner == email }.sumBy { it.orderDetail.count }
-    }
+    override fun unAttachedOrderDetails(): Flow<List<OrderDetailFull>> = orderDetailsDao.getUnAttachedDetails().map { list -> list.map { it.toDomainModel() } }
 
     /*{
         val result = MediatorLiveData<Int>()
@@ -154,7 +158,7 @@ class OrderDetailsRepositoryImpl(
 
 
 
-    override fun updateUnattachedOrderDetailsWithEmail(email: String) = orderDetailsDao.updateUnattachedOrderDetailsWithEmail(email)
+    override fun updateUnattachedOrderDetailsWithEmail(newEmail: String,oldEmail: String) = orderDetailsDao.updateUnattachedOrderDetailsWithEmail(newEmail,oldEmail)
 
     override fun updateAttachedOrderDetailsWithOrderId(email: String, orderId: Int) =  orderDetailsDao.updateAttachedOrderDetailsWithOrderId(email, orderId)
 

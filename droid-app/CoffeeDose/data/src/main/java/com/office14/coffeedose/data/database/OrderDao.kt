@@ -9,8 +9,8 @@ interface OrderDao {
     @Query("select * from orders")
     fun getAll(): Flow<List<OrderDbo>>
 
-    @Query("select * from orders where finished = 'false'")
-    fun getAllNotFinished(): Flow<List<OrderDbo>>
+    @Query("select * from orders where owner = :email and finished = 'false'")
+    fun getAllNotFinishedForuser(email: String): Flow<List<OrderDbo>>
 
     @Query("select * from orders where owner = :email")
     fun getAllForUser(email: String): Flow<List<OrderDbo>>

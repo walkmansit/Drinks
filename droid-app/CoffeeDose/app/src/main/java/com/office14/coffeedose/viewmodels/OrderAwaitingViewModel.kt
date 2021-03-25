@@ -14,6 +14,7 @@ import com.office14.coffeedose.domain.usecase.MarkOrderAsFinishedForUser
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
 
@@ -73,12 +74,13 @@ class OrderAwaitingViewModel @Inject constructor(
         fun rightStatus(order: Order){
             _queueOrderStatus.value = order.statusCode
             _order.value = order
+            getOrderInfo() //get load order info from api on last order update
         }
 
-        getCurrentQueueOrderByUser(GetCurrentQueueOrderByUser.Params(emailChannel.asFlow())){
+        getCurrentQueueOrderByUser(UseCaseBase.None()){
             it.mapLatest { either ->
                 either.fold(::noStatus,::rightStatus)
-            }
+            }.launchIn(viewModelScope)
         }
     }
 
@@ -86,7 +88,7 @@ class OrderAwaitingViewModel @Inject constructor(
         val result = MediatorLiveData<Boolean>()
 
         val update = {
-            result.value = _isLoading.value == false && orderInfo.value != null
+            result.value = _isLoading.value == false && _order.value != null
         }
 
         result.addSource(isLoading){ update.invoke() }
@@ -97,14 +99,17 @@ class OrderAwaitingViewModel @Inject constructor(
 
     private fun getOrderInfo() {
         fun noInfo(failure:Failure){
+            _orderInfo.value = null
             _isLoading.value = false
         }
         fun rightInfo(info:OrderInfo){
             _orderInfo.value = info
             _isLoading.value = false
         }
-        getLastOrderInfo(UseCaseBase.None()){
-            it.fold(::noInfo,::rightInfo)
+        getLastOrderInfo(GetLastOrderInfo.Params(::getOrderInfo)){
+            it .mapLatest { either ->
+                either.fold(::noInfo,::rightInfo)
+            }
         }
     }
 

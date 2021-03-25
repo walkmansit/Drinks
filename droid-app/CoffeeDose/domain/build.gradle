@@ -54,4 +54,5 @@ dependencies {
     // if you use the support libraries
     kapt "com.google.dagger:dagger-android-processor:2.30.1"
     kapt "com.google.dagger:dagger-compiler:2.30.1"
+
 }

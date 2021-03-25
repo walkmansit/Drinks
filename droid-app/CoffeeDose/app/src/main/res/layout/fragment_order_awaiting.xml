@@ -27,6 +27,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:isVisible="@{viewModel.isRootVisible()}">
+            <!---->
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_order_awaiting_details"
@@ -42,7 +43,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/bv_approve"
-                android:textColor="@color/color_primary"
+                android:textColor="@color/color_regular_text"
                 android:layout_width="200dp"
                 android:layout_height="@dimen/default_button_height"
                 android:layout_alignParentBottom="true"

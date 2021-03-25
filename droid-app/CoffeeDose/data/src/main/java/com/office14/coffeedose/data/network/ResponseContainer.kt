@@ -11,7 +11,7 @@ data class ResponseContainer<T>(
     val traceId: String?,
     val detail: String?
 ) {
-    fun hasError(): Boolean = payload == null
+    fun hasError(): Boolean = title != null
 
     fun getError() = ResponseError(
         type ?: "unknown type", title ?: "Error", status ?: 500, traceId ?: "", detail ?: ""

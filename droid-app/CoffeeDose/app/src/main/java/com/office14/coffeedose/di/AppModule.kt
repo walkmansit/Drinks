@@ -10,9 +10,11 @@ import com.office14.coffeedose.data.repository.*
 import com.office14.coffeedose.di.orders.OrdersScope
 import com.office14.coffeedose.plugins.PreferencesRepositoryImpl
 import com.office14.coffeedose.domain.exception.NetworkHandler
+import com.office14.coffeedose.domain.exception.RequireAuthHandler
 import com.office14.coffeedose.domain.repository.*
 import com.office14.coffeedose.domain.usecase.GetCurrentQueueOrderByUser
 import com.office14.coffeedose.networkhandler.NetworkHandlerImpl
+import com.office14.coffeedose.plugins.RequireAuthHandlerImpl
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
@@ -94,7 +96,17 @@ abstract class AppModule {
 
         @Singleton
         @Provides
-        fun provideGetCurrentQueueOrderByUserUseCase(ordersRepository: OrdersRepository)  =
-            GetCurrentQueueOrderByUser(ordersRepository)
+        fun provideGetCurrentQueueOrderByUserUseCase(ordersRepository: OrdersRepository,userRepository: UserRepository)  =
+            GetCurrentQueueOrderByUser(ordersRepository,userRepository)
+
+        @Singleton
+        @Provides
+        fun provideRequireAuthHandler() : RequireAuthHandler = RequireAuthHandlerImpl()
+
+        @Singleton
+        @Provides
+        fun provideUserRepository(preferencesRepository: PreferencesRepository) : UserRepository = UserRepositoryImpl(preferencesRepository)
+
+
     }
 }

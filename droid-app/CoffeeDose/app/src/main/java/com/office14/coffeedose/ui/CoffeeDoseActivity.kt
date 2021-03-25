@@ -59,6 +59,7 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
         initToolbar()
         checkFcmRegToken()
         setUpNavigation()
+        handleAuthCallback()
 
         handleMenuUpdate()
         (application as CoffeeDoseApplication).currentActivity = this
@@ -93,6 +94,12 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
     }
 
     private var successAuthCallback: () -> Unit = {}
+
+    private fun handleAuthCallback(){
+        menuInfoViewModel.authCallback.observe(this){
+            signIn { it }
+        }
+    }
 
     private fun handleNavigationOnNotification() {
         //Toast.makeText(this,"Intent ex = ${intent?.extras ?: "empty"}", Toast.LENGTH_LONG)
@@ -170,11 +177,12 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
             if (tokenIdTask.isSuccessful) {
                 if (tokenIdTask.result != null && tokenIdTask.result!!.token != null) {
                     val token = tokenIdTask.result!!.token!!
-                    PreferencesRepositoryImpl.saveIdToken(token)
-                    PreferencesRepositoryImpl.saveUserEmail(account.email!!)
-                    menuInfoViewModel.refreshOrderDetailsByUser()
-                    menuInfoViewModel.user?.let { it.idToken = token }
-                    menuInfoViewModel.updateUser()
+                    //PreferencesRepositoryImpl.saveIdToken(token)
+                    //PreferencesRepositoryImpl.saveUserEmail(account.email!!)
+                    val oldEmail = PreferencesRepositoryImpl.getUserEmail()
+                    menuInfoViewModel.logIn(account.email!!,token)
+                    menuInfoViewModel.refreshOrderDetailsByUser(account.email!!,oldEmail)
+
                     getAndUpdateActualFcmToken()
                     //menuInfoViewModel.refresh()
                     successAuthCallback()
@@ -206,19 +214,18 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
             googleSignInClient.signOut()
         }
 
-
-
-
         with(PreferencesRepositoryImpl) {
             menuInfoViewModel.deleteFcmDeviceTokenOnLogOut(getDeviceID(), getIdToken()!!)
-            saveUserEmail(EMPTY_STRING)
-            saveIdToken(EMPTY_STRING)
+            //saveUserEmail(EMPTY_STRING)
+            //saveIdToken(EMPTY_STRING)
             saveFcmRegToken(EMPTY_STRING)
         }
 
-        menuInfoViewModel.refreshOrderDetailsByUser()
+        menuInfoViewModel.logOut()
+
+        menuInfoViewModel.cancelPollingJob()
         //menuInfoViewModel.refresh()
-        invalidateOptionsMenu()
+        //invalidateOptionsMenu()
     }
 
     private fun initToolbar() {

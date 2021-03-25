@@ -2,9 +2,9 @@ package com.office14.coffeedose.plugins
 
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
-import android.preference.PreferenceManager
 import androidx.appcompat.app.AppCompatDelegate
 import com.office14.coffeedose.CoffeeDoseApplication
+import com.office14.coffeedose.domain.defaultuser.DefaultUser
 import com.office14.coffeedose.domain.repository.PreferencesRepository
 import java.util.*
 
@@ -67,7 +67,7 @@ object PreferencesRepositoryImpl : PreferencesRepository {
         putValue(USER_EMAIL_KEY to email)
     }
 
-    override fun getUserEmail() = prefs.getString(USER_EMAIL_KEY, EMPTY_STRING)!!
+    override fun getUserEmail() = prefs.getString(USER_EMAIL_KEY, DefaultUser.DEFAULT_EMAIL)!!
 
     override fun getDeviceID(): String {
         var id = prefs.getString(DEVICE_ID, EMPTY_STRING)

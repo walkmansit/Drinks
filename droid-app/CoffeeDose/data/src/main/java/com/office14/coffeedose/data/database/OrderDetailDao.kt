@@ -73,8 +73,8 @@ interface OrderDetailDao {
         insertAllOrderDetailsToAddInsCross(*crossRefsList.toTypedArray())
     }
 
-    @Query("update order_details set owner = :email where order_id is null and owner is null ")
-    fun updateUnattachedOrderDetailsWithEmail(email: String): Int
+    @Query("update order_details set owner = :newEmail where order_id is null and owner = :oldEmail ")
+    fun updateUnattachedOrderDetailsWithEmail(newEmail: String,oldEmail: String): Int
 
     @Query("update order_details set order_id = :orderId where order_id is null and owner = :email ")
     fun updateAttachedOrderDetailsWithOrderId(email: String, orderId: Int): Int

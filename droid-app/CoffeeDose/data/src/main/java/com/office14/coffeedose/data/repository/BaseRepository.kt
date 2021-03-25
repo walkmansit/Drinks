@@ -14,7 +14,7 @@ open class BaseRepository {
                             Either.Left(Failure.ServerError(RESPONSE_BODY_NULL))
                         else
                             transformPayload(response.body()!!,transform)
-                false -> Either.Left(Failure.ServerError(RESPONSE_NOT_SUCCESSFUL))
+                false -> Either.Left(if (response.code() == 401)  Failure.AuthotizationRequired(response.message()) else Failure.ServerError(RESPONSE_NOT_SUCCESSFUL))
             }
         } catch (exception: Throwable) {
             Either.Left(Failure.ServerError())
@@ -27,7 +27,7 @@ open class BaseRepository {
         }
         else{
             if (container.payload == null)
-                Either.Left(Failure.ServerError(PAYLOAD_NULL))
+                Either.Left(Failure.NoData(PAYLOAD_NULL))
             else
                 Either.Right(transform.invoke(container.payload))
         }
