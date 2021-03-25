@@ -1,6 +1,6 @@
 package com.office14.coffeedose.domain.usecase
 
-import com.office14.coffeedose.domain.defaultuser.DefaultUser
+import com.office14.coffeedose.domain.entity.UserA
 import com.office14.coffeedose.domain.exception.Failure
 import com.office14.coffeedose.domain.exception.RequireAuthHandler
 import com.office14.coffeedose.domain.functional.Either
@@ -34,7 +34,11 @@ class ConfirmOrder @Inject constructor (private val ordersRepository: OrdersRepo
         }
 
 
-        if(email == DefaultUser.DEFAULT_EMAIL) return Either.Left(Failure.AuthotizationRequired(Message.OrderDetails.AuthotizationRequered))
+        if(email == UserA.DEFAULT_EMAIL) {
+            authHandler.call { params.authCallBack }
+            return Either.Left(Failure.AuthotizationRequired(Message.OrderDetails.AuthotizationRequered))
+        }
+
 
         val order = ordersRepository.getCurrentNotFinishedOrderByUser(email)
         if (order != null) return Either.Left(Failure.DomainError(Message.OrderDetails.FinishCurrentOrderFirst))

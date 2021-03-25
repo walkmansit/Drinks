@@ -23,6 +23,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.iid.FirebaseInstanceId
 import com.office14.coffeedose.CoffeeDoseApplication
 import com.office14.coffeedose.di.InjectingSavedStateViewModelFactory
+import com.office14.coffeedose.domain.plugins.AuthProvider
 import com.office14.coffeedose.plugins.PreferencesRepositoryImpl
 import com.office14.coffeedose.plugins.PreferencesRepositoryImpl.EMPTY_STRING
 import com.office14.coffeedose.viewmodels.MenuInfoViewModel
@@ -31,7 +32,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import javax.inject.Inject
 
 
-class CoffeeDoseActivity : DaggerAppCompatActivity() {
+class CoffeeDoseActivity : DaggerAppCompatActivity(), AuthProvider {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
@@ -193,8 +194,8 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
 
     fun signIn(successCallback: () -> Unit) {
 
-        if (PreferencesRepositoryImpl.getUserEmail() != EMPTY_STRING)
-            logout()
+        //if (PreferencesRepositoryImpl.getUserEmail() != EMPTY_STRING)
+        //    logout()
 
         successAuthCallback = successCallback
         //try sighnIn with current google token
@@ -263,7 +264,7 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
         menuInfoViewModel.restartLongPolling()
     }
 
-    fun isStarted(): Boolean = lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+    //fun isStarted(): Boolean = lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
 
     fun updateTheme(theme: Int) {
         delegate.localNightMode = theme
@@ -282,5 +283,13 @@ class CoffeeDoseActivity : DaggerAppCompatActivity() {
         const val DestinationFragmentIDKey = "DestinationFragmentIDKey"
         const val OrderAwatingFragmentID = 12
 
+    }
+
+    override fun trySighnIn() {
+        signIn {  }
+    }
+
+    override fun sighnOut() {
+        TODO("Not yet implemented")
     }
 }

@@ -7,7 +7,9 @@ import com.office14.coffeedose.domain.functional.Either
 import com.office14.coffeedose.domain.interactor.UseCaseFlow
 import com.office14.coffeedose.domain.repository.OrdersRepository
 import com.office14.coffeedose.domain.repository.UserRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
 
@@ -26,8 +28,11 @@ class GetLastOrderInfo @Inject constructor (
                 authHandler.call(params.authCallBack)
         }
 
+        if(user.isDefault)
+            return@mapLatest Either.Left(Failure.NoData())
+
         val result = ordersRepository.getLastOrderInfo(user.idToken, user.email)
         result.fold(::pushAuthRequired) {}
         return@mapLatest result
-    }
+    }.flowOn(Dispatchers.IO)
 }

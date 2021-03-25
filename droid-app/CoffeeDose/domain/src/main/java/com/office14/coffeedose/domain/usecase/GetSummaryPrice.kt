@@ -5,8 +5,10 @@ import com.office14.coffeedose.domain.entity.CoffeeSize
 import com.office14.coffeedose.domain.exception.Failure
 import com.office14.coffeedose.domain.functional.Either
 import com.office14.coffeedose.domain.interactor.UseCaseFlow
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 
 class GetSummaryPrice : UseCaseFlow<String, GetSummaryPrice.Params>() {
@@ -17,4 +19,5 @@ class GetSummaryPrice : UseCaseFlow<String, GetSummaryPrice.Params>() {
         .combine(params.selectedSizeFlow){ addins, size -> addins.map { it.price }.sum() + size.price }
         .combine(params.countFlow){ sum, count -> sum*count }
         .mapLatest { total -> Either.Right( "$total Р." )}
+        .flowOn(Dispatchers.Default)
 }

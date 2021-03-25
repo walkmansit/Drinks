@@ -109,7 +109,7 @@ class OrderAwaitingViewModel @Inject constructor(
         getLastOrderInfo(GetLastOrderInfo.Params(::getOrderInfo)){
             it .mapLatest { either ->
                 either.fold(::noInfo,::rightInfo)
-            }
+            }.launchIn(viewModelScope)
         }
     }
 

@@ -4,10 +4,10 @@ import android.app.Application
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
 import com.coffeedose.R
-import com.office14.coffeedose.domain.defaultuser.DefaultUser
 import com.office14.coffeedose.domain.entity.LastOrderStatus
 import com.office14.coffeedose.domain.entity.Order
 import com.office14.coffeedose.domain.entity.OrderStatus
+import com.office14.coffeedose.domain.entity.UserA
 import com.office14.coffeedose.plugins.PreferencesRepositoryImpl
 import com.office14.coffeedose.domain.exception.Failure
 import com.office14.coffeedose.domain.exception.RequireAuthHandler
@@ -121,7 +121,7 @@ class MenuInfoViewModel @Inject constructor(
             either.fold(::left,::right)
         }
 
-        if (newEmail != DefaultUser.DEFAULT_EMAIL)
+        if (newEmail != UserA.DEFAULT_EMAIL)
             startLongPollingLastOrderStatus()
 
         /*val oldEmail = email
@@ -165,16 +165,16 @@ class MenuInfoViewModel @Inject constructor(
     private fun startLongPollingLastOrderStatus(){
 
         fun left(failure:Failure){
-            if (failure is Failure.NoData)
-                cancelPollingJob()
+            //if (failure is Failure.NoData)
+            //    cancelPollingJob()
         }
 
         fun right(status: LastOrderStatus){
-            if (status.statusName.toLowerCase() == "ready")
-                cancelPollingJob()
+            //if (status.statusName.toLowerCase() == "ready")
+            //    cancelPollingJob()
         }
-        if(PreferencesRepositoryImpl.getUserEmail() != DefaultUser.DEFAULT_EMAIL)
-            longPollingLastOrderStatus(LongPollingLastOrderStatus.Params(::startLongPollingLastOrderStatus)){
+        if(PreferencesRepositoryImpl.getUserEmail() != UserA.DEFAULT_EMAIL)
+            longPollingLastOrderStatus(LongPollingLastOrderStatus.Params(::startLongPollingLastOrderStatus,pollingScope)){
                 it.mapLatest { either -> either.fold(::left,::right) }.launchIn(pollingScope)
             }
     }
@@ -232,13 +232,7 @@ class MenuInfoViewModel @Inject constructor(
         }*/
     }
 
-    fun logIn(newEmail: String, newIdToken:String){
-        logIn(LogIn.Params(newEmail,newIdToken))
-    }
 
-    fun logOut(){
-        logOutUK(UseCaseBase.None())
-    }
 
     fun updateUser() {
         //TODO
@@ -247,6 +241,14 @@ class MenuInfoViewModel @Inject constructor(
                 usersRepository.updateUser(it)
             }
         }*/
+    }
+
+    fun logIn(newEmail: String, newIdToken:String){
+        logIn(LogIn.Params(newEmail,newIdToken))
+    }
+
+    fun logOut(){
+        logOutUK(UseCaseBase.None())
     }
 
     private fun handleRequireAuthHandler(){

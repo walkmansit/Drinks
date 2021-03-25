@@ -187,10 +187,10 @@ class DrinksFragment : DaggerFragment(), HasDefaultViewModelProviderFactory,
         viewModel.user.value?.let {
 
             menu.findItem(R.id.userInfo).title =
-                    if (it.idDefault) getString(R.string.Unauthrorized) else it.email
-            menu.findItem(R.id.login).isVisible = it.idDefault
-            menu.findItem(R.id.logout).isVisible = !it.idDefault
-            menu.findItem(R.id.changeUser).isVisible = !it.idDefault
+                    if (it.isDefault) getString(R.string.Unauthrorized) else it.email
+            menu.findItem(R.id.login).isVisible = it.isDefault
+            menu.findItem(R.id.logout).isVisible = !it.isDefault
+            menu.findItem(R.id.changeUser).isVisible = !it.isDefault
         }
     }
 

@@ -7,9 +7,11 @@ import com.office14.coffeedose.domain.interactor.UseCase
 import com.office14.coffeedose.domain.interactor.UseCaseBase
 import com.office14.coffeedose.domain.interactor.UseCaseFlow
 import com.office14.coffeedose.domain.repository.CoffeeRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class GetDrinks @Inject constructor (private val coffeeRepository : CoffeeRepository) : UseCaseFlow<List<Coffee>, UseCaseBase.None>() {
-    override suspend fun run(params: None): Flow<Either<Failure, List<Coffee>>>  = coffeeRepository.drinks
+    override suspend fun run(params: None): Flow<Either<Failure, List<Coffee>>>  = coffeeRepository.drinks.flowOn(Dispatchers.IO)
 }

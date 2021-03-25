@@ -11,9 +11,7 @@ import com.office14.coffeedose.domain.entity.UserA
 import com.office14.coffeedose.domain.exception.Failure
 import com.office14.coffeedose.domain.interactor.UseCaseBase
 import com.office14.coffeedose.domain.repository.PreferencesRepository
-import com.office14.coffeedose.domain.usecase.GetDrinks
-import com.office14.coffeedose.domain.usecase.GetUser
-import com.office14.coffeedose.domain.usecase.RefreshDrinks
+import com.office14.coffeedose.domain.usecase.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,7 +26,9 @@ class DrinksViewModel @Inject constructor(
         private val getDrinks : GetDrinks,
         private val refreshDrinks : RefreshDrinks,
         private val getUser: GetUser,
-        private val prefRepository : PreferencesRepository
+        private val prefRepository : PreferencesRepository,
+        private val logIn: LogIn,
+        private val logOutUK: LogOut
 ) : BaseViewModel(application) {
 
     //private val prefRepository = PreferencesRepositoryImpl
@@ -123,6 +123,14 @@ class DrinksViewModel @Inject constructor(
 
     fun selectDrink(id: Int) {
         _selectedId.value = id
+    }
+
+    fun logIn(newEmail: String, newIdToken:String){
+        logIn(LogIn.Params(newEmail,newIdToken))
+    }
+
+    fun logOut(){
+        logOutUK(UseCaseBase.None())
     }
 
     /*fun navigateOrders() {

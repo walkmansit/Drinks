@@ -1,6 +1,6 @@
 package com.office14.coffeedose.domain.usecase
 
-import com.office14.coffeedose.domain.defaultuser.DefaultUser
+import com.office14.coffeedose.domain.entity.UserA
 import com.office14.coffeedose.domain.exception.Failure
 import com.office14.coffeedose.domain.functional.Either
 import com.office14.coffeedose.domain.functional.map
@@ -19,10 +19,10 @@ class RefreshOrderDetailsOnUserLogIn @Inject constructor (private val ordersRepo
     data class Params(val oldEmail: String,val newEmail: String)
 
     override suspend fun run(params: Params): Either<Failure, None> {
-        if (params.newEmail != params.oldEmail && params.newEmail != DefaultUser.DEFAULT_EMAIL){
+        if (params.newEmail != params.oldEmail && params.newEmail != UserA.DEFAULT_EMAIL){
             val result = ordersRepository.getLastOrderForUserAndPutIntoDB(prefsRepository.getIdToken(),params.newEmail)
             result.fold({},{
-                if (params.oldEmail == DefaultUser.DEFAULT_EMAIL){
+                if (params.oldEmail == UserA.DEFAULT_EMAIL){
                     orderDetailsRepository.updateUnattachedOrderDetailsWithEmail(params.newEmail,params.oldEmail)
                 }
             })

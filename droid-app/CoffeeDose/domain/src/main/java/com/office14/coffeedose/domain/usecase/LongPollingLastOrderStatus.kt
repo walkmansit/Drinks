@@ -7,9 +7,10 @@ import com.office14.coffeedose.domain.functional.Either
 import com.office14.coffeedose.domain.interactor.UseCaseFlow
 import com.office14.coffeedose.domain.repository.OrdersRepository
 import com.office14.coffeedose.domain.repository.UserRepository
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
+import kotlin.coroutines.coroutineContext
 
 class LongPollingLastOrderStatus @Inject constructor (
         private val ordersRepository: OrdersRepository,
@@ -18,23 +19,23 @@ class LongPollingLastOrderStatus @Inject constructor (
         )
     : UseCaseFlow<LastOrderStatus, LongPollingLastOrderStatus.Params>() {
 
-    data class Params(val authCallBack:() -> Unit)
+    data class Params(val authCallBack:() -> Unit,val scope:CoroutineScope)
 
-    private fun getLastOrderFlowForIdToken(idToken: String,authCallBack:() -> Unit) :Flow<Either<Failure, LastOrderStatus>> = flow {
+    //private funetLastOrderFlowForIdToken(idToken: String,authCallBack:() -> Unit,scope : CoroutineScope) : Flow<Either<Failure, LastOrderStatus>> =
+            //.stateIn(scope, SharingStarted.WhileSubscribed(),Either.Left(Failure.ServerError()))
+
+    override suspend fun run(params: Params): Flow<Either<Failure, LastOrderStatus>> = flow {
         fun pushAuthRequired(failure: Failure){
             if (failure is Failure.AuthotizationRequired)
-                authHandler.call(authCallBack)
+                authHandler.call(params.authCallBack)
         }
 
         while (true) {
-            val result = ordersRepository.refreshLastOrderStatus(idToken)
+            val result = ordersRepository.refreshLastOrderStatus(userRepository.getCurrentUserAsFlow().value.idToken)
             result.fold(::pushAuthRequired) {}
             delay(5000)
             emit(result)
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
-    override suspend fun run(params: Params): Flow<Either<Failure, LastOrderStatus>> = userRepository.getCurrentUserAsFlow().flatMapLatest {
-        user -> getLastOrderFlowForIdToken(user.idToken,params.authCallBack)
-    }
 }

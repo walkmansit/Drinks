@@ -11,8 +11,7 @@ import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
 class GetUser @Inject constructor (private val userRepository: UserRepository) : UseCaseFlow<UserA, UseCaseBase.None>() {
-    override suspend fun run(params: None): Flow<Either<Failure, UserA>> =
-            userRepository.getCurrentUserAsFlow().mapLatest {
+    override suspend fun run(params: None): Flow<Either<Failure, UserA>> = userRepository.getCurrentUserAsFlow().mapLatest {
                 Either.Right(it)
-            }
+            }.flowOn(Dispatchers.IO)
 }

@@ -68,9 +68,7 @@ class OrderDetailsFragment : DaggerFragment(), HasDefaultViewModelProviderFactor
 
         handleShowError()
 
-        handleLoginRequired()
-
-        handleForceLongPolling()
+        //handleForceLongPolling()
 
         handleCommentInput(binding.edComment)
 
@@ -107,8 +105,10 @@ class OrderDetailsFragment : DaggerFragment(), HasDefaultViewModelProviderFactor
 
     private fun initNavigation() {
         viewModel.navigateOrderAwaiting.observe(viewLifecycleOwner, Observer {
-            findNavController().navigate(OrderDetailsFragmentDirections.actionOrderFragmentToOrderAwaitingFragment())
-            viewModel.doneNavigating()
+            if(it) {
+                findNavController().navigate(OrderDetailsFragmentDirections.actionOrderFragmentToOrderAwaitingFragment())
+                viewModel.doneNavigating()
+            }
         })
     }
 
@@ -173,25 +173,14 @@ class OrderDetailsFragment : DaggerFragment(), HasDefaultViewModelProviderFactor
         }
     }
 
-    private fun handleLoginRequired() {
-        viewModel.needLogIn.observe(requireActivity(), Observer {
-            if (it) {
-                (activity as CoffeeDoseActivity).signIn {
-                    viewModel.confirmOrder()
-                }
-                viewModel.doneLogin()
-            }
-        })
-    }
-
-    private fun handleForceLongPolling() {
+    /*private fun handleForceLongPolling() {
         viewModel.forceLongPolling.observe(requireActivity(), Observer {
             if (it) {
                 (activity as CoffeeDoseActivity).forceLongPolling()
                 viewModel.doneForceLongPolling()
             }
         })
-    }
+    }*/
 
     override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory =
         defaultViewModelFactory.create(this)

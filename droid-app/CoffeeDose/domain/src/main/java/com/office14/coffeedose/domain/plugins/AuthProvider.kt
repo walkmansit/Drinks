@@ -1,4 +1,6 @@
 package com.office14.coffeedose.domain.plugins
 
-class AuthProvider {
+interface AuthProvider {
+    fun trySighnIn()
+    fun sighnOut()
 }

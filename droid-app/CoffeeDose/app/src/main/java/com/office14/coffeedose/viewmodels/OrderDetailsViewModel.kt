@@ -45,10 +45,6 @@ class OrderDetailsViewModel @Inject constructor(
     val errorMessage: LiveData<String>
         get() = _errorMessage
 
-    private val _needLogin = MutableLiveData<Boolean>()
-    val needLogIn: LiveData<Boolean>
-        get() = _needLogin
-
     val isEmpty = Transformations.map(unAttachedOrders) {
         return@map it.isEmpty()
     }
@@ -92,7 +88,7 @@ class OrderDetailsViewModel @Inject constructor(
         }
     }
 
-    fun handleConfirmOrder(param : UseCaseBase.None){
+    private fun handleConfirmOrder(param : UseCaseBase.None){
         _forceLongPolling.value = true
         _navigateOrderAwaiting.value = true
     }
@@ -101,8 +97,6 @@ class OrderDetailsViewModel @Inject constructor(
 
         fun handleConfirmFailure(failure: Failure){
             _errorMessage.value = failure.message
-            if (failure is Failure.AuthotizationRequired)
-                _needLogin.value = true
         }
 
         confirmOrder(ConfirmOrder.Params(comment?:"",::confirmOrder)){
@@ -148,12 +142,6 @@ class OrderDetailsViewModel @Inject constructor(
                 }
             }
         }*/
-    }
-
-
-
-    fun doneLogin() {
-        _needLogin.value = false
     }
 
     fun hideErrorMessage() {
